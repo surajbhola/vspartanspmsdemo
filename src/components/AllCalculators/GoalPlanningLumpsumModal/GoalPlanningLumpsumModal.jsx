@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import styles from "./GoalPlanningLumpSumModal.module.css";
+import styles from "./GoalPlanningLumpsumModal.module.css";
 import * as echarts from "echarts";
 
 const GoalPlanningLumpSumModal = ({ onClose }) => {
