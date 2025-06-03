@@ -43,7 +43,7 @@ const Header = () => {
         <div className={styles.mobileMenu}>
           <div className={styles.container}>
             <nav className={styles.mobileNav}>
-              {["About", "Team", "Offerings", "Resources", "Calculators", "Contact Us"].map(
+              {["About", "Team", "Offerings", "Resources", "Calculators", "Contact"].map(
                 (item, i) => (
                   <Link
                     key={i}
