@@ -2,10 +2,32 @@ import React, { useState, useEffect, useRef } from "react";
 import styles from "./CAGRCalculatorModal.module.css";
 import * as echarts from "echarts";
 
+const numberToWords = (num) => {
+  if (num === 0) return "zero";
+
+  const crore = Math.floor(num / 10000000);
+  num %= 10000000;
+  const lakh = Math.floor(num / 100000);
+  num %= 100000;
+  const thousand = Math.floor(num / 1000);
+  num %= 1000;
+  const hundred = Math.floor(num / 100);
+  num %= 100;
+
+  const parts = [];
+  if (crore) parts.push(`${crore} crore`);
+  if (lakh) parts.push(`${lakh} lakh`);
+  if (thousand) parts.push(`${thousand} thousand`);
+  if (hundred) parts.push(`${hundred} hundred`);
+  if (num) parts.push(num);
+
+  return parts.join(" ");
+};
+
 const CAGRCalculatorModal = ({ onClose }) => {
-  const [beginningValue, setBeginningValue] = useState(100);
-  const [endingValue, setEndingValue] = useState(200);
-  const [period, setPeriod] = useState(10);
+  const [beginningValue, setBeginningValue] = useState();
+  const [endingValue, setEndingValue] = useState();
+  const [period, setPeriod] = useState();
   const [result, setResult] = useState(null);
 
   const modalRef = useRef(null);
@@ -108,6 +130,7 @@ const CAGRCalculatorModal = ({ onClose }) => {
                 type="number"
                 value={beginningValue}
                 onChange={(e) => setBeginningValue(+e.target.value)}
+                placeholder="Beginning Value"
               />
             </label>
 
@@ -117,6 +140,8 @@ const CAGRCalculatorModal = ({ onClose }) => {
                 type="number"
                 value={endingValue}
                 onChange={(e) => setEndingValue(+e.target.value)}
+                placeholder="Ending Value"
+
               />
             </label>
 
@@ -127,6 +152,8 @@ const CAGRCalculatorModal = ({ onClose }) => {
                 min={1}
                 max={50}
                 value={period}
+                placeholder="Years"
+
                 onChange={(e) => setPeriod(+e.target.value)}
               />
             </label>
@@ -143,10 +170,14 @@ const CAGRCalculatorModal = ({ onClose }) => {
                   <div>
                     <span>Beginning Value</span>
                     <strong>{formatCurrency(beginningValue)}</strong>
+                    <small>({numberToWords(beginningValue)})</small>
+
                   </div>
                   <div>
                     <span>Ending Value</span>
                     <strong>{formatCurrency(endingValue)}</strong>
+                    <small>({numberToWords(endingValue)})</small>
+
                   </div>
                   <div>
                     <span>CAGR</span>

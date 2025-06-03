@@ -3,10 +3,10 @@ import styles from "./StockMarketVsFDModal.module.css";
 import * as echarts from "echarts";
 
 const StockMarketVsFDModal = ({ onClose }) => {
-  const [amount, setAmount] = useState(100000);
-  const [years, setYears] = useState(10);
-  const [fdRate, setFdRate] = useState(6);
-  const [marketRate, setMarketRate] = useState(12);
+  const [amount, setAmount] = useState();
+  const [years, setYears] = useState();
+  const [fdRate, setFdRate] = useState();
+  const [marketRate, setMarketRate] = useState();
   const [result, setResult] = useState(null);
   const chartRef = useRef(null);
   const modalRef = useRef(null);
@@ -31,7 +31,10 @@ const StockMarketVsFDModal = ({ onClose }) => {
   const calculate = () => {
     const fdValue = amount * Math.pow(1 + fdRate / 100, years);
     const marketValue = amount * Math.pow(1 + marketRate / 100, years);
-    setResult({ fdValue: Math.round(fdValue), marketValue: Math.round(marketValue) });
+    setResult({
+      fdValue: Math.round(fdValue),
+      marketValue: Math.round(marketValue),
+    });
   };
 
   useEffect(() => {
@@ -82,6 +85,20 @@ const StockMarketVsFDModal = ({ onClose }) => {
       maximumFractionDigits: 0,
     }).format(val);
 
+  const numberToWords = (num) => {
+    const crore = Math.floor(num / 10000000);
+    num %= 10000000;
+    const lakh = Math.floor(num / 100000);
+    num %= 100000;
+    const thousand = Math.floor(num / 1000);
+
+    const parts = [];
+    if (crore) parts.push(`${crore} crore`);
+    if (lakh) parts.push(`${lakh} lakh`);
+    if (thousand) parts.push(`${thousand} thousand`);
+    return parts.join(" ");
+  };
+
   return (
     <div className={styles.overlay}>
       <div className={styles.modal} ref={modalRef}>
@@ -98,6 +115,7 @@ const StockMarketVsFDModal = ({ onClose }) => {
               Investment Amount (₹)
               <input
                 type="number"
+                placeholder="e.g. 100000"
                 value={amount}
                 onChange={(e) => setAmount(Number(e.target.value))}
               />
@@ -107,6 +125,7 @@ const StockMarketVsFDModal = ({ onClose }) => {
               Investment Duration (Years)
               <input
                 type="number"
+                placeholder="e.g. 10"
                 value={years}
                 onChange={(e) => setYears(Number(e.target.value))}
               />
@@ -116,6 +135,7 @@ const StockMarketVsFDModal = ({ onClose }) => {
               FD Interest Rate (%)
               <input
                 type="number"
+                placeholder="e.g. 6"
                 value={fdRate}
                 onChange={(e) => setFdRate(Number(e.target.value))}
               />
@@ -125,6 +145,7 @@ const StockMarketVsFDModal = ({ onClose }) => {
               Stock Market Return Rate (%)
               <input
                 type="number"
+                placeholder="e.g. 12"
                 value={marketRate}
                 onChange={(e) => setMarketRate(Number(e.target.value))}
               />
@@ -141,11 +162,17 @@ const StockMarketVsFDModal = ({ onClose }) => {
                 <div className={styles.resultStats}>
                   <div>
                     <span>FD Returns</span>
-                    <strong>{formatCurrency(result.fdValue)}</strong>
+                    <strong>
+                      {formatCurrency(result.fdValue)} (
+                      {numberToWords(result.fdValue)})
+                    </strong>
                   </div>
                   <div>
                     <span>Stock Market Returns</span>
-                    <strong>{formatCurrency(result.marketValue)}</strong>
+                    <strong>
+                      {formatCurrency(result.marketValue)} (
+                      {numberToWords(result.marketValue)})
+                    </strong>
                   </div>
                 </div>
                 <div ref={chartRef} className={styles.chartContainer} />

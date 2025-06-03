@@ -1,24 +1,31 @@
-import React, { useState, useEffect, useRef } from "react";
 import styles from "./GoalPlanningSIPModal.module.css";
+import React, { useState, useEffect, useRef } from "react";
 import * as echarts from "echarts";
 
 const GoalPlanningSIPModal = ({ onClose }) => {
-  const [goalAmount, setGoalAmount] = useState(1000000);
-  const [years, setYears] = useState(10);
-  const [rate, setRate] = useState(12);
+  const [goalAmount, setGoalAmount] = useState();
+  const [years, setYears] = useState();
+  const [rate, setRate] = useState();
   const [result, setResult] = useState(null);
 
   const modalRef = useRef(null);
   const chartRef = useRef(null);
+  const chartInstanceRef = useRef(null);
 
   useEffect(() => {
     const handleClickOutside = (e) => {
-      if (modalRef.current && !modalRef.current.contains(e.target)) onClose();
+      if (modalRef.current && !modalRef.current.contains(e.target)) {
+        onClose();
+      }
     };
-    const handleEscape = (e) => { if (e.key === "Escape") onClose(); };
+    const handleEscape = (e) => {
+      if (e.key === "Escape") onClose();
+    };
+
     document.addEventListener("mousedown", handleClickOutside);
     document.addEventListener("keydown", handleEscape);
     document.body.style.overflow = "hidden";
+
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
       document.removeEventListener("keydown", handleEscape);
@@ -26,25 +33,48 @@ const GoalPlanningSIPModal = ({ onClose }) => {
     };
   }, [onClose]);
 
+  const formatCurrency = (val) =>
+    new Intl.NumberFormat("en-IN", {
+      style: "currency",
+      currency: "INR",
+      maximumFractionDigits: 0,
+    }).format(val);
+
+
+  const numberToWords = (num) => {
+    if (num === 0) return "zero";
+    const crore = Math.floor(num / 10000000);
+    num %= 10000000;
+    const lakh = Math.floor(num / 100000);
+    num %= 100000;
+    const thousand = Math.floor(num / 1000);
+    num %= 1000;
+    const hundred = Math.floor(num / 100);
+    num %= 100;
+
+    const parts = [];
+    if (crore) parts.push(`${crore} crore`);
+    if (lakh) parts.push(`${lakh} lakh`);
+    if (thousand) parts.push(`${thousand} thousand`);
+    if (hundred) parts.push(`${hundred} hundred`);
+    if (num) parts.push(num);
+    return parts.join(" ");
+  };
+
   const calculate = () => {
-   
+    if (!goalAmount || !years || !rate || goalAmount <= 0 || years <= 0 || rate <= 0) return;
+
     const r = rate / 12 / 100;
     const n = years * 12;
 
+    let sip = 0;
     if (r === 0) {
-      const sip = goalAmount / n;
-      setResult({
-        goalAmount,
-        sip: Math.round(sip),
-        totalInvested: Math.round(sip * n),
-        gains: Math.round(goalAmount - sip * n),
-        years,
-      });
-      return;
+      sip = goalAmount / n;
+    } else {
+      const denominator = (Math.pow(1 + r, n) - 1) * (1 + r);
+      sip = (goalAmount * r) / denominator;
     }
 
-    const denominator = (Math.pow(1 + r, n) - 1) * (1 + r);
-    const sip = (goalAmount * r) / denominator;
     const totalInvested = sip * n;
     const gains = goalAmount - totalInvested;
 
@@ -59,9 +89,15 @@ const GoalPlanningSIPModal = ({ onClose }) => {
 
   useEffect(() => {
     if (result && chartRef.current) {
-      const chart = echarts.init(chartRef.current);
+      if (!chartInstanceRef.current) {
+        chartInstanceRef.current = echarts.init(chartRef.current);
+      }
+
       const option = {
-        tooltip: { trigger: "item", formatter: "{b}: ₹{c} ({d}%)" },
+        tooltip: {
+          trigger: "item",
+          formatter: "{b}: ₹{c} ({d}%)",
+        },
         legend: {
           bottom: 0,
           data: ["Total Invested (SIP)", "Estimated Returns"],
@@ -74,29 +110,47 @@ const GoalPlanningSIPModal = ({ onClose }) => {
             radius: ["55%", "70%"],
             avoidLabelOverlap: false,
             label: { show: false },
-            emphasis: { label: { show: true, fontSize: 18, fontWeight: "bold" } },
+            emphasis: {
+              label: {
+                show: true,
+                fontSize: 18,
+                fontWeight: "bold",
+              },
+            },
             data: [
-              { value: result.totalInvested, name: "Total Invested (SIP)", itemStyle: { color: "#2D69FD" } },
-              { value: result.gains, name: "Estimated Returns", itemStyle: { color: "#00C48C" } },
+              {
+                value: result.totalInvested,
+                name: "Total Invested (SIP)",
+                itemStyle: { color: "#2D69FD" },
+              },
+              {
+                value: result.gains,
+                name: "Estimated Returns",
+                itemStyle: { color: "#00C48C" },
+              },
             ],
           },
         ],
       };
-      chart.setOption(option);
-      window.addEventListener("resize", () => chart.resize());
-      return () => chart.dispose();
+
+      chartInstanceRef.current.setOption(option);
+      const resizeHandler = () => chartInstanceRef.current.resize();
+      window.addEventListener("resize", resizeHandler);
+
+      return () => {
+        chartInstanceRef.current.dispose();
+        chartInstanceRef.current = null;
+        window.removeEventListener("resize", resizeHandler);
+      };
     }
   }, [result]);
-
-  const formatCurrency = (val) =>
-    new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(val);
 
   return (
     <div className={styles.overlay} role="dialog" aria-modal="true" aria-labelledby="goal-sip-title">
       <div className={styles.modal} ref={modalRef} tabIndex={-1}>
         <header className={styles.modalHeader}>
           <h2 id="goal-sip-title">Goal Planning - SIP</h2>
-          <button onClick={onClose} aria-label="Close modal" className={styles.closeBtn}>
+          <button onClick={onClose} className={styles.closeBtn} aria-label="Close modal">
             &times;
           </button>
         </header>
@@ -107,9 +161,9 @@ const GoalPlanningSIPModal = ({ onClose }) => {
               Goal Amount (₹)
               <input
                 type="number"
-                min={10000}
                 value={goalAmount}
                 onChange={(e) => setGoalAmount(Number(e.target.value))}
+                placeholder="Ex: 1000"
               />
             </label>
 
@@ -117,9 +171,9 @@ const GoalPlanningSIPModal = ({ onClose }) => {
               Time to Goal (Years)
               <input
                 type="number"
-                min={1}
                 value={years}
                 onChange={(e) => setYears(Number(e.target.value))}
+                placeholder="Ex: 10"
               />
             </label>
 
@@ -127,14 +181,13 @@ const GoalPlanningSIPModal = ({ onClose }) => {
               Expected Annual Return (%)
               <input
                 type="number"
-                min={1}
-                max={30}
                 value={rate}
                 onChange={(e) => setRate(Number(e.target.value))}
+                placeholder="Ex: 12"
               />
             </label>
 
-            <button className={styles.calculateBtn} onClick={calculate}>
+            <button onClick={calculate} className={styles.calculateBtn}>
               Calculate
             </button>
 
@@ -149,19 +202,39 @@ const GoalPlanningSIPModal = ({ onClose }) => {
                 <div className={styles.resultStats}>
                   <div>
                     <span>Goal Amount</span>
-                    <strong>{formatCurrency(result.goalAmount)}</strong>
+                    <strong>
+                      {formatCurrency(result.goalAmount)}{" "}
+                      <span className={styles.amountWords}>
+                        ({numberToWords(result.goalAmount)})
+                      </span>
+                    </strong>
                   </div>
                   <div>
                     <span>Monthly SIP Required</span>
-                    <strong>{formatCurrency(result.sip)}</strong>
+                    <strong>
+                      {formatCurrency(result.sip)}{" "}
+                      <span className={styles.amountWords}>
+                        ({numberToWords(result.sip)})
+                      </span>
+                    </strong>
                   </div>
                   <div>
                     <span>Total Invested (SIP)</span>
-                    <strong>{formatCurrency(result.totalInvested)}</strong>
+                    <strong>
+                      {formatCurrency(result.totalInvested)}{" "}
+                      <span className={styles.amountWords}>
+                        ({numberToWords(result.totalInvested)})
+                      </span>
+                    </strong>
                   </div>
                   <div>
                     <span>Estimated Returns</span>
-                    <strong>{formatCurrency(result.gains)}</strong>
+                    <strong>
+                      {formatCurrency(result.gains)}{" "}
+                      <span className={styles.amountWords}>
+                        ({numberToWords(result.gains)})
+                      </span>
+                    </strong>
                   </div>
                   <div>
                     <span>Time to Goal</span>
@@ -169,7 +242,7 @@ const GoalPlanningSIPModal = ({ onClose }) => {
                   </div>
                 </div>
 
-                <div ref={chartRef} className={styles.chartContainer} />
+                <div className={styles.chartContainer} ref={chartRef}></div>
 
                 <p className={styles.note}>
                   Investing {formatCurrency(result.sip)} monthly at an expected return of {rate}% p.a. can help you

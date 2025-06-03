@@ -3,22 +3,27 @@ import styles from "./TimeDurationSIPModal.module.css";
 import * as echarts from "echarts";
 
 const TimeDurationSIPModal = ({ onClose }) => {
-  const [sipAmount, setSIPAmount] = useState(10000);
-  const [rate, setRate] = useState(12);
-  const [goal, setGoal] = useState(1000000);
+  const [investment, setInvestment] = useState();
+  const [rate, setRate] = useState();
+  const [goal, setGoal] = useState();
+  const [frequency, setFrequency] = useState("monthly"); 
   const [result, setResult] = useState(null);
 
   const modalRef = useRef(null);
   const chartRef = useRef(null);
+  const chartInstanceRef = useRef(null);
 
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (modalRef.current && !modalRef.current.contains(e.target)) onClose();
     };
-    const handleEscape = (e) => { if (e.key === "Escape") onClose(); };
+    const handleEscape = (e) => {
+      if (e.key === "Escape") onClose();
+    };
     document.addEventListener("mousedown", handleClickOutside);
     document.addEventListener("keydown", handleEscape);
     document.body.style.overflow = "hidden";
+
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
       document.removeEventListener("keydown", handleEscape);
@@ -26,32 +31,87 @@ const TimeDurationSIPModal = ({ onClose }) => {
     };
   }, [onClose]);
 
-  const calculate = () => {
-    const r = rate / 100 / 12;
-    let n = 0;
-    let futureValue = 0;
+  const formatCurrency = (amt) =>
+    new Intl.NumberFormat("en-IN", {
+      style: "currency",
+      currency: "INR",
+      maximumFractionDigits: 0,
+    }).format(amt);
 
-    while (futureValue < goal && n < 1000) {
-      futureValue = sipAmount * ((Math.pow(1 + r, n) - 1) / r) * (1 + r);
-      n++;
+  const numberToWords = (num) => {
+    const crore = Math.floor(num / 10000000);
+    num %= 10000000;
+    const lakh = Math.floor(num / 100000);
+    num %= 100000;
+    const thousand = Math.floor(num / 1000);
+
+    const parts = [];
+    if (crore) parts.push(`${crore} crore`);
+    if (lakh) parts.push(`${lakh} lakh`);
+    if (thousand) parts.push(`${thousand} thousand`);
+    return parts.join(" ") || "zero";
+  };
+
+  const formatDuration = (months) => {
+    const y = Math.floor(months / 12);
+    const m = months % 12;
+    return `${y ? `${y} year${y > 1 ? "s" : ""}` : ""}${
+      y && m ? " and " : ""
+    }${m ? `${m} month${m > 1 ? "s" : ""}` : ""}` || "0 months";
+  };
+
+  const calculate = () => {
+    if (!investment || !goal || !rate || investment <= 0 || goal <= 0 || rate <= 0) {
+      setResult(null);
+      return;
     }
 
-    const totalInvested = sipAmount * n;
-    const gains = futureValue - totalInvested;
-
-    setResult({
-      sipAmount,
-      goal,
-      months: n,
-      years: (n / 12).toFixed(1),
-      totalInvested,
-      gains,
-    });
+    let r, n = 0, fv = 0;
+    if (frequency === "yearly") {
+      r = rate / 100;
+      while (fv < goal && n < 100) {
+        fv = investment * ((Math.pow(1 + r, n) - 1) / r);
+        n++;
+      }
+      if (n === 100) {
+        setResult(null);
+        return;
+      }
+      const totalInvested = investment * n;
+      setResult({
+        investment,
+        goal,
+        months: n * 12,
+        totalInvested,
+        gains: fv - totalInvested,
+      });
+    } else {
+      r = rate / 12 / 100;
+      while (fv < goal && n < 1200) {
+        fv = investment * ((Math.pow(1 + r, n) - 1) / r);
+        n++;
+      }
+      if (n === 1200) {
+        setResult(null);
+        return;
+      }
+      const totalInvested = investment * n;
+      setResult({
+        investment,
+        goal,
+        months: n,
+        totalInvested,
+        gains: fv - totalInvested,
+      });
+    }
   };
 
   useEffect(() => {
     if (result && chartRef.current) {
-      const chart = echarts.init(chartRef.current);
+      if (!chartInstanceRef.current) {
+        chartInstanceRef.current = echarts.init(chartRef.current);
+      }
+
       const option = {
         tooltip: { trigger: "item", formatter: "{b}: ₹{c} ({d}%)" },
         legend: {
@@ -64,6 +124,7 @@ const TimeDurationSIPModal = ({ onClose }) => {
             name: "Time Duration",
             type: "pie",
             radius: ["55%", "70%"],
+            avoidLabelOverlap: false,
             label: { show: false },
             emphasis: { label: { show: true, fontSize: 18, fontWeight: "bold" } },
             data: [
@@ -73,57 +134,122 @@ const TimeDurationSIPModal = ({ onClose }) => {
           },
         ],
       };
-      chart.setOption(option);
-      window.addEventListener("resize", () => chart.resize());
-      return () => chart.dispose();
+
+      chartInstanceRef.current.setOption(option);
+
+      const resizeHandler = () => chartInstanceRef.current?.resize();
+      window.addEventListener("resize", resizeHandler);
+
+      return () => {
+        chartInstanceRef.current?.dispose();
+        chartInstanceRef.current = null;
+        window.removeEventListener("resize", resizeHandler);
+      };
     }
   }, [result]);
 
-  const formatCurrency = (val) =>
-    new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(val);
-
   return (
-    <div className={styles.overlay} role="dialog" aria-modal="true">
-      <div className={styles.modal} ref={modalRef}>
+    <div className={styles.overlay} role="dialog" aria-modal="true" aria-labelledby="regular-investment-title">
+      <div className={styles.modal} ref={modalRef} tabIndex={-1}>
         <header className={styles.modalHeader}>
-          <h2>Time Duration - SIP Investment</h2>
-          <button onClick={onClose} className={styles.closeBtn}>&times;</button>
+          <h2 id="regular-investment-title">Time Duration - Regular Investment</h2>
+          <button onClick={onClose} className={styles.closeBtn} aria-label="Close modal">
+            &times;
+          </button>
         </header>
 
         <div className={styles.modalBody}>
           <div className={styles.inputSection}>
-            <label>Monthly SIP (₹)
-              <input type="number" value={sipAmount} onChange={(e) => setSIPAmount(Number(e.target.value))} />
+            <label htmlFor="freqSelect">Frequency of Investment</label>
+            <select
+              id="freqSelect"
+              value={frequency}
+              onChange={(e) => setFrequency(e.target.value)}
+              aria-label="Select frequency of investment"
+              className={styles.selectInput}
+            >
+              <option value="monthly">Monthly</option>
+              <option value="yearly">Yearly</option>
+            </select>
+
+            <label>
+              Targeted Wealth *
+              <input
+                type="number"
+                placeholder="eg: 10,000"
+                value={goal}
+                onChange={(e) => setGoal(Number(e.target.value))}
+                min={0}
+              />
             </label>
-            <label>Expected Annual Return (%)
-              <input type="number" value={rate} onChange={(e) => setRate(Number(e.target.value))} />
+
+            <label>
+              Investment Amount ({frequency === "yearly" ? "P.A" : "P.M"}) *
+              <input
+                type="number"
+                placeholder={frequency === "yearly" ? "Ex: Rs 6000" : "Ex: Rs 500"}
+                value={investment}
+                onChange={(e) => setInvestment(Number(e.target.value))}
+                min={0}
+              />
             </label>
-            <label>Goal Amount (₹)
-              <input type="number" value={goal} onChange={(e) => setGoal(Number(e.target.value))} />
+
+            <label>
+              Expected rate of return (P.A) *
+              <input
+                type="number"
+                placeholder="Ex: 12%"
+                value={rate}
+                onChange={(e) => setRate(Number(e.target.value))}
+                min={0}
+              />
             </label>
-            <button onClick={calculate} className={styles.calculateBtn}>Calculate</button>
+
+            <button onClick={calculate} className={styles.calculateBtn}>
+              Calculate
+            </button>
+            <p className={styles.tip}>
+              Enter your {frequency === "yearly" ? "yearly" : "monthly"} investment, expected return, and target wealth to calculate the time needed.
+            </p>
           </div>
 
           <div className={styles.resultSection}>
             {result ? (
               <>
                 <div className={styles.resultStats}>
-                  <div><span>Monthly SIP</span><strong>{formatCurrency(result.sipAmount)}</strong></div>
-                  <div><span>Goal Amount</span><strong>{formatCurrency(result.goal)}</strong></div>
-                  <div><span>Total Invested</span><strong>{formatCurrency(result.totalInvested)}</strong></div>
-                  <div><span>Time to Goal</span><strong>{result.years} years</strong></div>
+                  <div>
+                    <span>Investment Amount ({frequency === "yearly" ? "P.A" : "P.M"})</span>
+                    <strong>{formatCurrency(result.investment)}</strong>
+                    <small>{numberToWords(result.investment)}</small>
+                  </div>
+                  <div>
+                    <span>Targeted Wealth</span>
+                    <strong>{formatCurrency(result.goal)}</strong>
+                    <small>{numberToWords(result.goal)}</small>
+                  </div>
+                  <div>
+                    <span>Total Invested</span>
+                    <strong>{formatCurrency(result.totalInvested)}</strong>
+                    <small>{numberToWords(result.totalInvested)}</small>
+                  </div>
+                  <div>
+                    <span>Time to Goal</span>
+                    <strong>{formatDuration(result.months)}</strong>
+                  </div>
                 </div>
+
                 <div ref={chartRef} className={styles.chartContainer} />
-                <p className={styles.note}>
-                  You need {result.years} years of SIP to reach {formatCurrency(goal)} at {rate}% p.a.
+
+                <p className={styles.resultCaption}>
+                  The pie chart shows the split between total invested and estimated returns over the duration.
                 </p>
               </>
             ) : (
-              <div className={styles.placeholder}>
-                <img src="/growth-graph.jpg" alt="SIP Duration" />
-                <h4>Estimate duration via SIP</h4>
-                <p>Enter monthly SIP, expected return, and goal to calculate duration.</p>
-              </div>
+                <div className={styles.placeholder}>
+                              <img src="/growth-graph.jpg" alt="One-Time Duration" />
+                              <h4>Estimate your time to goal</h4>
+                              <p>Enter investment, goal, and return to calculate duration.</p>
+                            </div>
             )}
           </div>
         </div>

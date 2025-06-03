@@ -9,6 +9,29 @@ const frequencyMap = {
   monthly: 12,
 };
 
+
+const numberToWords = (num) => {
+  if (num === 0) return "zero";
+
+  const crore = Math.floor(num / 10000000);
+  num %= 10000000;
+  const lakh = Math.floor(num / 100000);
+  num %= 100000;
+  const thousand = Math.floor(num / 1000);
+  num %= 1000;
+  const hundred = Math.floor(num / 100);
+  num %= 100;
+
+  const parts = [];
+  if (crore) parts.push(`${crore} crore`);
+  if (lakh) parts.push(`${lakh} lakh`);
+  if (thousand) parts.push(`${thousand} thousand`);
+  if (hundred) parts.push(`${hundred} hundred`);
+  if (num) parts.push(num);
+
+  return parts.join(" ");
+};
+
 const CompoundInterestCalculatorModal = ({ onClose }) => {
   const [initialInvestment, setInitialInvestment] = useState(200);
   const [interestRate, setInterestRate] = useState(12);
@@ -99,8 +122,12 @@ const CompoundInterestCalculatorModal = ({ onClose }) => {
           },
         ],
       });
-      window.addEventListener("resize", () => chart.resize());
-      return () => chart.dispose();
+      const resizeHandler = () => chart.resize();
+      window.addEventListener("resize", resizeHandler);
+      return () => {
+        window.removeEventListener("resize", resizeHandler);
+        chart.dispose();
+      };
     }
   }, [result]);
 
@@ -129,6 +156,8 @@ const CompoundInterestCalculatorModal = ({ onClose }) => {
                 type="number"
                 value={initialInvestment}
                 onChange={(e) => setInitialInvestment(+e.target.value)}
+                placeholder="Enter initial investment amount"
+                min={0}
               />
             </label>
 
@@ -138,6 +167,9 @@ const CompoundInterestCalculatorModal = ({ onClose }) => {
                 type="number"
                 value={interestRate}
                 onChange={(e) => setInterestRate(+e.target.value)}
+                placeholder="Enter annual interest rate"
+                min={0}
+                step={0.01}
               />
             </label>
 
@@ -147,6 +179,8 @@ const CompoundInterestCalculatorModal = ({ onClose }) => {
                 type="number"
                 value={tenure}
                 onChange={(e) => setTenure(+e.target.value)}
+                placeholder="Enter tenure in years"
+                min={0}
               />
             </label>
 
@@ -170,6 +204,8 @@ const CompoundInterestCalculatorModal = ({ onClose }) => {
                 type="number"
                 value={regularInvestment}
                 onChange={(e) => setRegularInvestment(+e.target.value)}
+                placeholder="Enter regular investment amount"
+                min={0}
               />
             </label>
 
@@ -187,7 +223,10 @@ const CompoundInterestCalculatorModal = ({ onClose }) => {
               </select>
             </label>
 
-            <button className={styles.calculateBtn} onClick={calculateCompoundInterest}>
+            <button
+              className={styles.calculateBtn}
+              onClick={calculateCompoundInterest}
+            >
               Calculate
             </button>
           </div>
@@ -199,26 +238,36 @@ const CompoundInterestCalculatorModal = ({ onClose }) => {
                   <div>
                     <span>Total Investment</span>
                     <strong>{formatCurrency(result.totalInvestment)}</strong>
+                    <small>({numberToWords(result.totalInvestment)})</small>
                   </div>
                   <div>
                     <span>Interest Earned</span>
                     <strong>{formatCurrency(result.totalInterest)}</strong>
+                    <small>({numberToWords(result.totalInterest)})</small>
                   </div>
                   <div>
                     <span>Maturity Amount</span>
                     <strong>{formatCurrency(result.maturityAmount)}</strong>
+                    <small>({numberToWords(result.maturityAmount)})</small>
                   </div>
                 </div>
                 <div ref={chartRef} className={styles.chartContainer} />
                 <p className={styles.note}>
-                  Your investment will grow to {formatCurrency(result.maturityAmount)} in {tenure} years at {interestRate}% interest compounded {compoundingFreq}.
+                  Your investment will grow to{" "}
+                  <strong>{formatCurrency(result.maturityAmount)}</strong> (
+                  {numberToWords(result.maturityAmount)}) in {tenure} year
+                  {tenure > 1 ? "s" : ""} at {interestRate}% interest compounded{" "}
+                  {compoundingFreq}.
                 </p>
               </>
             ) : (
               <div className={styles.placeholder}>
                 <img src="/growth-graph.jpg" alt="Compound Interest" />
                 <h4>Calculate your Compound Interest earnings</h4>
-                <p>Enter principal, interest, tenure, and frequency to get started.</p>
+                <p>
+                  Enter principal, interest, tenure, and frequency to get
+                  started.
+                </p>
               </div>
             )}
           </div>

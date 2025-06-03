@@ -3,9 +3,9 @@ import styles from "./SIPCalculatorModal.module.css";
 import * as echarts from "echarts";
 
 const SIPCalculatorModal = ({ onClose }) => {
-  const [sipAmount, setSipAmount] = useState(5000);
-  const [sipYears, setSipYears] = useState(10);
-  const [sipRate, setSipRate] = useState(12);
+  const [sipAmount, setSipAmount] = useState("");
+  const [sipYears, setSipYears] = useState("");
+  const [sipRate, setSipRate] = useState("");
   const [result, setResult] = useState(null);
 
   const modalRef = useRef(null);
@@ -17,13 +17,11 @@ const SIPCalculatorModal = ({ onClose }) => {
         onClose();
       }
     };
-
     const handleEscape = (e) => {
       if (e.key === "Escape") {
         onClose();
       }
     };
-
     document.addEventListener("mousedown", handleClickOutside);
     document.addEventListener("keydown", handleEscape);
     document.body.style.overflow = "hidden";
@@ -36,28 +34,31 @@ const SIPCalculatorModal = ({ onClose }) => {
   }, [onClose]);
 
   const calculate = () => {
-    const monthlyRate = sipRate / 12 / 100;
-    const months = sipYears * 12;
-    const invested = sipAmount * months;
-    const futureValue =
-      sipAmount *
-      ((Math.pow(1 + monthlyRate, months) - 1) / monthlyRate) *
-      (1 + monthlyRate);
+    const P = Number(sipAmount);
+    const r = Number(sipRate) / 12 / 100;
+    const n = Number(sipYears) * 12;
+
+    if (!P || !r || !n) {
+      alert("Please enter valid values for all fields.");
+      return;
+    }
+
+    const invested = P * n;
+    const futureValue = P * ((Math.pow(1 + r, n) - 1) / r) * (1 + r);
     const gains = futureValue - invested;
 
     setResult({
       invested,
-      futureValue: Math.round(futureValue),
-      gains: Math.round(gains),
-      months,
+      gains,
+      futureValue,
+      months: n,
     });
   };
-
 
   useEffect(() => {
     if (result && chartRef.current) {
       const chart = echarts.init(chartRef.current);
-      const option = {
+      chart.setOption({
         animation: true,
         tooltip: { trigger: "item", formatter: "{b}: {c} ({d}%)" },
         legend: {
@@ -70,7 +71,6 @@ const SIPCalculatorModal = ({ onClose }) => {
             name: "Investment Breakdown",
             type: "pie",
             radius: ["50%", "70%"],
-            avoidLabelOverlap: false,
             label: { show: false },
             emphasis: {
               label: { show: true, fontSize: 16, fontWeight: "bold" },
@@ -89,8 +89,7 @@ const SIPCalculatorModal = ({ onClose }) => {
             ],
           },
         ],
-      };
-      chart.setOption(option);
+      });
 
       const resize = () => chart.resize();
       window.addEventListener("resize", resize);
@@ -108,16 +107,34 @@ const SIPCalculatorModal = ({ onClose }) => {
       maximumFractionDigits: 0,
     }).format(amt);
 
+  const numberToWords = (num) => {
+    const crore = Math.floor(num / 10000000);
+    num %= 10000000;
+    const lakh = Math.floor(num / 100000);
+    num %= 100000;
+    const thousand = Math.floor(num / 1000);
+
+    const parts = [];
+    if (crore) parts.push(`${crore} crore`);
+    if (lakh) parts.push(`${lakh} lakh`);
+    if (thousand) parts.push(`${thousand} thousand`);
+    return parts.join(" ");
+  };
+
+  const formatDuration = (months) => {
+    const y = Math.floor(months / 12);
+    const m = months % 12;
+    return `${y ? `${y} year${y > 1 ? "s" : ""}` : ""}${
+      y && m ? " and " : ""
+    }${m ? `${m} month${m > 1 ? "s" : ""}` : ""}` || "0 months";
+  };
+
   return (
     <div className={styles.overlay} role="dialog" aria-modal="true" aria-labelledby="modal-title">
       <div className={styles.modal} ref={modalRef} tabIndex={-1}>
         <header className={styles.header}>
           <h2 id="modal-title">SIP Calculator</h2>
-          <button
-            onClick={onClose}
-            aria-label="Close modal"
-            className={styles.closeButton}
-          >
+          <button onClick={onClose} className={styles.closeButton} aria-label="Close modal">
             &times;
           </button>
         </header>
@@ -129,8 +146,8 @@ const SIPCalculatorModal = ({ onClose }) => {
               <input
                 type="number"
                 value={sipAmount}
-                onChange={(e) => setSipAmount(Number(e.target.value))}
-                min="500"
+                onChange={(e) => setSipAmount(e.target.value)}
+                placeholder="e.g., 5000"
               />
             </label>
 
@@ -139,8 +156,8 @@ const SIPCalculatorModal = ({ onClose }) => {
               <input
                 type="number"
                 value={sipYears}
-                onChange={(e) => setSipYears(Number(e.target.value))}
-                min="1"
+                onChange={(e) => setSipYears(e.target.value)}
+                placeholder="e.g., 10"
               />
             </label>
 
@@ -149,9 +166,8 @@ const SIPCalculatorModal = ({ onClose }) => {
               <input
                 type="number"
                 value={sipRate}
-                onChange={(e) => setSipRate(Number(e.target.value))}
-                min="1"
-                max="30"
+                onChange={(e) => setSipRate(e.target.value)}
+                placeholder="e.g., 12"
               />
             </label>
 
@@ -160,9 +176,8 @@ const SIPCalculatorModal = ({ onClose }) => {
             </button>
 
             <div className={styles.tipBox}>
-              <strong>Quick Tip:</strong> Increasing your monthly SIP amount by just 10%
-              annually can significantly boost your final corpus due to the power of
-              compounding.
+              <strong>Quick Tip:</strong> Increasing your monthly SIP by 10% yearly
+              significantly boosts wealth through compounding.
             </div>
           </section>
 
@@ -172,19 +187,34 @@ const SIPCalculatorModal = ({ onClose }) => {
                 <div className={styles.statsBox}>
                   <div>
                     <span>Invested Amount</span>
-                    <strong>{formatCurrency(result.invested)}</strong>
+                    <strong>
+                      {formatCurrency(result.invested)}{" "}
+                      <span className={styles.amountWords}>
+                        ({numberToWords(result.invested)})
+                      </span>
+                    </strong>
                   </div>
                   <div>
                     <span>Estimated Returns</span>
-                    <strong>{formatCurrency(result.gains)}</strong>
+                    <strong>
+                      {formatCurrency(result.gains)}{" "}
+                      <span className={styles.amountWords}>
+                        ({numberToWords(result.gains)})
+                      </span>
+                    </strong>
                   </div>
                   <div>
                     <span>Total Value</span>
-                    <strong>{formatCurrency(result.futureValue)}</strong>
+                    <strong>
+                      {formatCurrency(result.futureValue)}{" "}
+                      <span className={styles.amountWords}>
+                        ({numberToWords(result.futureValue)})
+                      </span>
+                    </strong>
                   </div>
                   <div>
-                    <span>Investment Period</span>
-                    <strong>{result.months} months</strong>
+                    <span>Investment Duration</span>
+                    <strong>{formatDuration(result.months)}</strong>
                   </div>
                 </div>
 
@@ -195,23 +225,16 @@ const SIPCalculatorModal = ({ onClose }) => {
                 />
 
                 <div className={styles.noteBox}>
-                  <strong>Did you know?</strong> Starting early with SIP investments can
-                  significantly increase your returns due to the power of compounding. Even
-                  a small monthly investment of ₹{sipAmount} can grow to{" "}
-                  {formatCurrency(result.futureValue)} in {sipYears} years at {sipRate}%
-                  annual returns.
+                  <strong>Did you know?</strong> Starting early helps maximize
+                  compounding benefits. Even ₹{sipAmount} monthly for {sipYears} years
+                  at {sipRate}% can grow to {formatCurrency(result.futureValue)}.
                 </div>
-
-            
               </>
             ) : (
               <div className={styles.placeholder}>
                 <img src="/growth-graph.jpg" alt="Investment Growth" />
                 <h4>See how your investments can grow</h4>
-                <p>
-                  Fill in the details on the left and click Calculate to see your potential
-                  returns over time.
-                </p>
+                <p>Fill in the details and click Calculate to visualize your returns.</p>
                 <ul>
                   <li>Step 1: Set time period</li>
                   <li>Step 2: Enter amount</li>

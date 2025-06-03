@@ -2,12 +2,40 @@ import React, { useState, useEffect, useRef } from "react";
 import styles from "./RetirementPlanningCalculatorModal.module.css";
 import * as echarts from "echarts";
 
+const formatCurrency = (amt, decimals = 0) =>
+  new Intl.NumberFormat("en-IN", {
+    style: "currency",
+    currency: "INR",
+    minimumFractionDigits: decimals,
+    maximumFractionDigits: decimals,
+  }).format(amt);
+
+const numberToWords = (num) => {
+  const crore = Math.floor(num / 10000000);
+  num %= 10000000;
+  const lakh = Math.floor(num / 100000);
+  num %= 100000;
+  const thousand = Math.floor(num / 1000);
+
+  const parts = [];
+  if (crore) parts.push(`${crore} crore`);
+  if (lakh) parts.push(`${lakh} lakh`);
+  if (thousand) parts.push(`${thousand} thousand`);
+  return parts.join(" ") || "zero";
+};
+
+const formatLargeNumberWithCrores = (num) => {
+  const crores = num / 10000000;
+  return `${crores.toFixed(2)} Crores`;
+};
+
 const RetirementPlanningCalculatorModal = ({ onClose }) => {
-  const [currentAge, setCurrentAge] = useState(30);
-  const [retirementAge, setRetirementAge] = useState(60);
-  const [monthlyExpenses, setMonthlyExpenses] = useState(50000);
-  const [inflationRate, setInflationRate] = useState(6);
-  const [expectedReturn, setExpectedReturn] = useState(10);
+  const [currentAge, setCurrentAge] = useState();
+  const [retirementAge, setRetirementAge] = useState();
+  const [lifeExpectancy, setLifeExpectancy] = useState();
+  const [annualExpenses, setAnnualExpenses] = useState();
+  const [inflationRate, setInflationRate] = useState();
+  const [expectedReturn, setExpectedReturn] = useState();
   const [result, setResult] = useState(null);
 
   const modalRef = useRef(null);
@@ -30,39 +58,38 @@ const RetirementPlanningCalculatorModal = ({ onClose }) => {
     };
   }, [onClose]);
 
-const calculate = () => {
-  const yearsToRetirement = retirementAge - currentAge;
-  const retirementYears = 20; 
+  const calculate = () => {
+    const yearsToRetirement = retirementAge - currentAge;
+    const retirementYears = lifeExpectancy - retirementAge;
 
-  const annualExpenses = monthlyExpenses * 12;
+    
+    const inflatedAnnualExpenses =
+      annualExpenses * Math.pow(1 + inflationRate / 100, yearsToRetirement);
+
+    const r = expectedReturn / 100;
+    const n = retirementYears;
+
+    
+    const corpus =
+      inflatedAnnualExpenses * ((1 - Math.pow(1 + r, -n)) / r);
+
+  
+    const monthlyRate = r / 12;
+    const totalMonths = yearsToRetirement * 12;
 
 
-  const inflatedAnnualExpenses =
-    annualExpenses * Math.pow(1 + inflationRate / 100, yearsToRetirement);
+    const monthlyInvestment =
+      (corpus * monthlyRate) /
+      (Math.pow(1 + monthlyRate, totalMonths) - 1);
 
-
-  const realRate =
-    (1 + expectedReturn / 100) / (1 + inflationRate / 100) - 1;
-
-
-  const corpus =
-    inflatedAnnualExpenses *
-    ((1 - Math.pow(1 + realRate, -retirementYears)) / realRate);
-
-
-  const monthlyRate = expectedReturn / 100 / 12;
-  const totalMonths = yearsToRetirement * 12;
-
-  const monthlyInvestment =
-    (corpus * monthlyRate) /
-    (Math.pow(1 + monthlyRate, totalMonths) - 1);
-
-  setResult({
-    corpus: Math.round(corpus),
-    monthlyInvestment: Math.round(monthlyInvestment),
-    yearsToRetirement,
-  });
-};
+    setResult({
+      corpus,
+      monthlyInvestment,
+      yearsToRetirement,
+      retirementYears,
+      inflatedAnnualExpenses,
+    });
+  };
 
   useEffect(() => {
     if (result && chartRef.current) {
@@ -71,7 +98,7 @@ const calculate = () => {
         tooltip: { trigger: "item", formatter: "{b}: ₹{c} ({d}%)" },
         legend: {
           bottom: 0,
-          data: ["Required Corpus", "Monthly Investment"],
+          data: ["Required Corpus", "Total Investment"],
           textStyle: { color: "#666" },
         },
         series: [
@@ -86,12 +113,12 @@ const calculate = () => {
             },
             data: [
               {
-                value: result.corpus,
+                value: Math.round(result.corpus),
                 name: "Required Corpus",
                 itemStyle: { color: "#2D69FD" },
               },
               {
-                value: result.monthlyInvestment * result.yearsToRetirement * 12,
+                value: Math.round(result.monthlyInvestment * result.yearsToRetirement * 12),
                 name: "Total Investment",
                 itemStyle: { color: "#00C48C" },
               },
@@ -104,13 +131,6 @@ const calculate = () => {
       return () => chart.dispose();
     }
   }, [result]);
-
-  const formatCurrency = (val) =>
-    new Intl.NumberFormat("en-IN", {
-      style: "currency",
-      currency: "INR",
-      maximumFractionDigits: 0,
-    }).format(val);
 
   return (
     <div
@@ -134,54 +154,71 @@ const calculate = () => {
         <div className={styles.modalBody}>
           <div className={styles.inputSection}>
             <label>
-              Current Age
+              Current Age *
               <input
                 type="number"
                 min={18}
-                max={60}
+                max={retirementAge - 1}
+                placeholder="Ex: 24"
                 value={currentAge}
                 onChange={(e) => setCurrentAge(Number(e.target.value))}
               />
             </label>
 
             <label>
-              Retirement Age
+              Retirement Age *
               <input
                 type="number"
                 min={currentAge + 1}
-                max={80}
+                max={lifeExpectancy - 1}
+                placeholder="Ex: 60"
                 value={retirementAge}
                 onChange={(e) => setRetirementAge(Number(e.target.value))}
               />
             </label>
 
             <label>
-              Monthly Expenses (₹)
+              Life Expectancy *
               <input
                 type="number"
-                min={1000}
-                value={monthlyExpenses}
-                onChange={(e) => setMonthlyExpenses(Number(e.target.value))}
+                min={retirementAge + 1}
+                max={120}
+                placeholder="Ex: 80"
+                value={lifeExpectancy}
+                onChange={(e) => setLifeExpectancy(Number(e.target.value))}
               />
             </label>
 
             <label>
-              Inflation Rate (%)
+              Current Annual Expenses (₹) *
               <input
                 type="number"
-                min={1}
+                min={0}
+                placeholder="Ex: 1200000"
+                value={annualExpenses}
+                onChange={(e) => setAnnualExpenses(Number(e.target.value))}
+              />
+            </label>
+
+            <label>
+              Inflation Rate (%) *
+              <input
+                type="number"
+                min={0}
                 max={15}
+                placeholder="Ex: 6"
                 value={inflationRate}
                 onChange={(e) => setInflationRate(Number(e.target.value))}
               />
             </label>
 
             <label>
-              Expected Return (%)
+              Expected Return (%) *
               <input
                 type="number"
                 min={1}
-                max={15}
+                max={30}
+                placeholder="Ex: 30"
                 value={expectedReturn}
                 onChange={(e) => setExpectedReturn(Number(e.target.value))}
               />
@@ -192,9 +229,9 @@ const calculate = () => {
             </button>
 
             <p className={styles.tip}>
-              Enter your current age, retirement age, monthly expenses, expected
-              inflation, and return rates to calculate the required retirement
-              corpus and monthly investment.
+              Enter your current age, retirement age, life expectancy, annual
+              expenses, inflation, and expected return to calculate your
+              retirement corpus and monthly investment.
             </p>
           </div>
 
@@ -203,38 +240,50 @@ const calculate = () => {
               <>
                 <div className={styles.resultStats}>
                   <div>
-                    <span>Required Corpus</span>
-                    <strong>{formatCurrency(result.corpus)}</strong>
+                    <span>Retirement Corpus needed</span>
+                    <strong>
+                      {formatCurrency(result.corpus, 2)} (
+                       {numberToWords(Math.round(result.corpus))})
+                    </strong>
                   </div>
+
                   <div>
-                    <span>Monthly Investment</span>
-                    <strong>{formatCurrency(result.monthlyInvestment)}</strong>
+                    <span>Monthly savings required to reach corpus</span>
+                    <strong>{formatCurrency(result.monthlyInvestment, 2)}</strong>
                   </div>
+
+                  <div>
+                    <span>Annual expense at retirement age after considering inflation</span>
+                    <strong>{formatCurrency(result.inflatedAnnualExpenses, 2)}(
+                       {numberToWords(Math.round(result.inflatedAnnualExpenses))})</strong>
+                  </div>
+
                   <div>
                     <span>Years to Retirement</span>
                     <strong>{result.yearsToRetirement} years</strong>
+                  </div>
+
+                  <div>
+                    <span>Retirement Duration</span>
+                    <strong>{result.retirementYears} years</strong>
                   </div>
                 </div>
 
                 <div ref={chartRef} className={styles.chartContainer} />
 
                 <p className={styles.note}>
-                  Investing {formatCurrency(result.monthlyInvestment)} monthly
+                  Investing {formatCurrency(result.monthlyInvestment, 2)} monthly
                   can help you accumulate a corpus of{" "}
-                  {formatCurrency(result.corpus)} by the age of{" "}
-                  {retirementAge}.
+                  {formatCurrency(result.corpus, 2)} by the age of {retirementAge}.
                 </p>
               </>
             ) : (
               <div className={styles.placeholder}>
-                <img
-                  src="/growth-graph.jpg"
-                  alt="Retirement Planning"
-                />
+                <img src="/growth-graph.jpg" alt="Retirement Planning" />
                 <h4>Plan your retirement effectively</h4>
                 <p>
-                  Enter your details to calculate the required corpus and
-                  monthly investment.
+                  Enter your details to calculate the required corpus and monthly
+                  investment.
                 </p>
               </div>
             )}

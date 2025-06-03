@@ -2,11 +2,33 @@ import React, { useState, useEffect, useRef } from "react";
 import styles from "./RecurringDepositCalculatorModal.module.css";
 import * as echarts from "echarts";
 
+const numberToWords = (num) => {
+  if (num === 0) return "zero";
+
+  const crore = Math.floor(num / 10000000);
+  num %= 10000000;
+  const lakh = Math.floor(num / 100000);
+  num %= 100000;
+  const thousand = Math.floor(num / 1000);
+  num %= 1000;
+  const hundred = Math.floor(num / 100);
+  num %= 100;
+
+  const parts = [];
+  if (crore) parts.push(`${crore} crore`);
+  if (lakh) parts.push(`${lakh} lakh`);
+  if (thousand) parts.push(`${thousand} thousand`);
+  if (hundred) parts.push(`${hundred} hundred`);
+  if (num) parts.push(num);
+
+  return parts.join(" ");
+};
+
 const RecurringDepositCalculatorModal = ({ onClose }) => {
-  const [monthlyAmount, setMonthlyAmount] = useState(1000);
-  const [interestRate, setInterestRate] = useState(12);
-  const [years, setYears] = useState(1);
-  const [months, setMonths] = useState(0);
+  const [monthlyAmount, setMonthlyAmount] = useState();
+  const [interestRate, setInterestRate] = useState();
+  const [years, setYears] = useState();
+  const [months, setMonths] = useState();
   const [result, setResult] = useState(null);
 
   const modalRef = useRef(null);
@@ -34,7 +56,7 @@ const RecurringDepositCalculatorModal = ({ onClose }) => {
     const r = interestRate / 100 / 12;
     const n = years * 12 + months;
 
-    const maturityAmount = P * n + P * n * (n + 1) * r / (2 * 12);
+    const maturityAmount = P * n + (P * n * (n + 1) * r) / (2 * 12);
     const totalInvestment = P * n;
     const totalInterest = maturityAmount - totalInvestment;
 
@@ -69,20 +91,30 @@ const RecurringDepositCalculatorModal = ({ onClose }) => {
           },
         ],
       });
-      window.addEventListener("resize", () => chart.resize());
-      return () => chart.dispose();
+      const resizeHandler = () => chart.resize();
+      window.addEventListener("resize", resizeHandler);
+      return () => {
+        window.removeEventListener("resize", resizeHandler);
+        chart.dispose();
+      };
     }
   }, [result]);
 
   const formatCurrency = (val) =>
-    new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(val);
+    new Intl.NumberFormat("en-IN", {
+      style: "currency",
+      currency: "INR",
+      maximumFractionDigits: 0,
+    }).format(val);
 
   return (
     <div className={styles.overlay}>
       <div className={styles.modal} ref={modalRef}>
         <header className={styles.modalHeader}>
           <h2>Recurring Deposit Calculator</h2>
-          <button className={styles.closeBtn} onClick={onClose}>&times;</button>
+          <button className={styles.closeBtn} onClick={onClose}>
+            &times;
+          </button>
         </header>
 
         <div className={styles.modalBody}>
@@ -94,6 +126,7 @@ const RecurringDepositCalculatorModal = ({ onClose }) => {
                 min={100}
                 value={monthlyAmount}
                 onChange={(e) => setMonthlyAmount(+e.target.value)}
+                placeholder="Enter monthly deposit amount"
               />
             </label>
 
@@ -105,6 +138,7 @@ const RecurringDepositCalculatorModal = ({ onClose }) => {
                 step={0.01}
                 value={interestRate}
                 onChange={(e) => setInterestRate(+e.target.value)}
+                placeholder="Enter annual interest rate"
               />
             </label>
 
@@ -117,6 +151,7 @@ const RecurringDepositCalculatorModal = ({ onClose }) => {
                   max={50}
                   value={years}
                   onChange={(e) => setYears(+e.target.value)}
+                  placeholder="Years"
                 />
                 <span>Year(s)</span>
                 <input
@@ -125,6 +160,7 @@ const RecurringDepositCalculatorModal = ({ onClose }) => {
                   max={11}
                   value={months}
                   onChange={(e) => setMonths(+e.target.value)}
+                  placeholder="Months"
                 />
                 <span>Month(s)</span>
               </div>
@@ -142,19 +178,25 @@ const RecurringDepositCalculatorModal = ({ onClose }) => {
                   <div>
                     <span>Principal</span>
                     <strong>{formatCurrency(result.principal)}</strong>
+                    <small>({numberToWords(result.principal)})</small>
                   </div>
                   <div>
                     <span>Interest Earned</span>
                     <strong>{formatCurrency(result.totalInterest)}</strong>
+                    <small>({numberToWords(result.totalInterest)})</small>
                   </div>
                   <div>
                     <span>Maturity Amount</span>
                     <strong>{formatCurrency(result.maturityAmount)}</strong>
+                    <small>({numberToWords(result.maturityAmount)})</small>
                   </div>
                 </div>
                 <div ref={chartRef} className={styles.chartContainer} />
                 <p className={styles.note}>
-                  Your RD will mature to {formatCurrency(result.maturityAmount)} in {years} year(s) and {months} month(s) at {interestRate}% annual interest.
+                  Your RD will mature to{" "}
+                  <strong>{formatCurrency(result.maturityAmount)}</strong> (
+                  {numberToWords(result.maturityAmount)}) in {years} year(s) and {months} month(s) at{" "}
+                  {interestRate}% annual interest.
                 </p>
               </>
             ) : (

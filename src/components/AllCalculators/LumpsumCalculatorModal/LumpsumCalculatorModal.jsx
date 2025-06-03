@@ -3,23 +3,25 @@ import styles from "./LumpsumCalculatorModal.module.css";
 import * as echarts from "echarts";
 
 const LumpsumCalculatorModal = ({ onClose }) => {
-  const [lumpsumAmount, setLumpsumAmount] = useState(100000);
-  const [investmentYears, setInvestmentYears] = useState(10);
-  const [expectedReturn, setExpectedReturn] = useState(12);
+  const [investmentAmount, setInvestmentAmount] = useState("");
+  const [rateOfReturn, setRateOfReturn] = useState("");
+  const [tenureYears, setTenureYears] = useState("");
   const [result, setResult] = useState(null);
 
   const modalRef = useRef(null);
   const chartRef = useRef(null);
 
-
   useEffect(() => {
     const handleClickOutside = (e) => {
-      if (modalRef.current && !modalRef.current.contains(e.target)) onClose();
+      if (modalRef.current && !modalRef.current.contains(e.target)) {
+        onClose();
+      }
     };
     const handleEscape = (e) => {
-      if (e.key === "Escape") onClose();
+      if (e.key === "Escape") {
+        onClose();
+      }
     };
-
     document.addEventListener("mousedown", handleClickOutside);
     document.addEventListener("keydown", handleEscape);
     document.body.style.overflow = "hidden";
@@ -31,25 +33,31 @@ const LumpsumCalculatorModal = ({ onClose }) => {
     };
   }, [onClose]);
 
- 
   const calculate = () => {
-    const rate = expectedReturn / 100;
-    const futureValue = lumpsumAmount * Math.pow(1 + rate, investmentYears);
-    const gains = futureValue - lumpsumAmount;
+    const P = Number(investmentAmount);
+    const r = Number(rateOfReturn) / 100;
+    const t = Number(tenureYears);
+
+    if (!P || !r || !t || t > 50) {
+      alert("Please enter valid values for all fields (Tenure up to 50 years).");
+      return;
+    }
+
+    const futureValue = P * Math.pow(1 + r, t);
+    const gains = futureValue - P;
 
     setResult({
-      invested: lumpsumAmount,
-      futureValue: Math.round(futureValue),
-      gains: Math.round(gains),
-      years: investmentYears,
+      invested: P,
+      gains,
+      futureValue,
+      years: t,
     });
   };
-
 
   useEffect(() => {
     if (result && chartRef.current) {
       const chart = echarts.init(chartRef.current);
-      const option = {
+      chart.setOption({
         animation: true,
         tooltip: { trigger: "item", formatter: "{b}: {c} ({d}%)" },
         legend: {
@@ -62,7 +70,6 @@ const LumpsumCalculatorModal = ({ onClose }) => {
             name: "Investment Breakdown",
             type: "pie",
             radius: ["50%", "70%"],
-            avoidLabelOverlap: false,
             label: { show: false },
             emphasis: {
               label: { show: true, fontSize: 16, fontWeight: "bold" },
@@ -81,8 +88,7 @@ const LumpsumCalculatorModal = ({ onClose }) => {
             ],
           },
         ],
-      };
-      chart.setOption(option);
+      });
 
       const resize = () => chart.resize();
       window.addEventListener("resize", resize);
@@ -100,21 +106,30 @@ const LumpsumCalculatorModal = ({ onClose }) => {
       maximumFractionDigits: 0,
     }).format(amt);
 
+  const numberToWords = (num) => {
+    const crore = Math.floor(num / 10000000);
+    num %= 10000000;
+    const lakh = Math.floor(num / 100000);
+    num %= 100000;
+    const thousand = Math.floor(num / 1000);
+
+    const parts = [];
+    if (crore) parts.push(`${crore} crore`);
+    if (lakh) parts.push(`${lakh} lakh`);
+    if (thousand) parts.push(`${thousand} thousand`);
+    return parts.join(" ");
+  };
+
+  const formatDuration = (years) => {
+    return years ? `${years} year${years > 1 ? "s" : ""}` : "0 years";
+  };
+
   return (
-    <div
-      className={styles.overlay}
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="modal-title"
-    >
+    <div className={styles.overlay} role="dialog" aria-modal="true" aria-labelledby="modal-title">
       <div className={styles.modal} ref={modalRef} tabIndex={-1}>
         <header className={styles.header}>
           <h2 id="modal-title">Lumpsum Calculator</h2>
-          <button
-            onClick={onClose}
-            aria-label="Close modal"
-            className={styles.closeButton}
-          >
+          <button onClick={onClose} className={styles.closeButton} aria-label="Close modal">
             &times;
           </button>
         </header>
@@ -122,33 +137,33 @@ const LumpsumCalculatorModal = ({ onClose }) => {
         <div className={styles.container}>
           <section className={styles.inputSection}>
             <label>
-              Lump Sum Amount
+              Investment Amount*
               <input
                 type="number"
-                value={lumpsumAmount}
-                onChange={(e) => setLumpsumAmount(Number(e.target.value))}
-                min="1000"
+                value={investmentAmount}
+                onChange={(e) => setInvestmentAmount(e.target.value)}
+                placeholder="e.g., 10000"
               />
             </label>
 
             <label>
-              Investment Period (Years)
+              Expected Rate of Return (P.A)*
               <input
                 type="number"
-                value={investmentYears}
-                onChange={(e) => setInvestmentYears(Number(e.target.value))}
-                min="1"
+                value={rateOfReturn}
+                onChange={(e) => setRateOfReturn(e.target.value)}
+                placeholder="e.g., 12"
               />
             </label>
 
             <label>
-              Expected Annual Return (%)
+              Tenure (in years)* (Up to 50 years)
               <input
                 type="number"
-                value={expectedReturn}
-                onChange={(e) => setExpectedReturn(Number(e.target.value))}
-                min="1"
-                max="30"
+                value={tenureYears}
+                onChange={(e) => setTenureYears(e.target.value)}
+                placeholder="e.g., 10"
+                max={50}
               />
             </label>
 
@@ -157,8 +172,7 @@ const LumpsumCalculatorModal = ({ onClose }) => {
             </button>
 
             <div className={styles.tipBox}>
-              <strong>Tip:</strong> Your lump sum grows exponentially with time at
-              compounding interest.
+              <strong>Quick Tip:</strong> A higher rate of return and longer tenure can significantly boost your wealth.
             </div>
           </section>
 
@@ -168,19 +182,34 @@ const LumpsumCalculatorModal = ({ onClose }) => {
                 <div className={styles.statsBox}>
                   <div>
                     <span>Invested Amount</span>
-                    <strong>{formatCurrency(result.invested)}</strong>
+                    <strong>
+                      {formatCurrency(result.invested)}{" "}
+                      <span className={styles.amountWords}>
+                        ({numberToWords(result.invested)})
+                      </span>
+                    </strong>
                   </div>
                   <div>
                     <span>Estimated Returns</span>
-                    <strong>{formatCurrency(result.gains)}</strong>
+                    <strong>
+                      {formatCurrency(result.gains)}{" "}
+                      <span className={styles.amountWords}>
+                        ({numberToWords(result.gains)})
+                      </span>
+                    </strong>
                   </div>
                   <div>
                     <span>Total Value</span>
-                    <strong>{formatCurrency(result.futureValue)}</strong>
+                    <strong>
+                      {formatCurrency(result.futureValue)}{" "}
+                      <span className={styles.amountWords}>
+                        ({numberToWords(result.futureValue)})
+                      </span>
+                    </strong>
                   </div>
                   <div>
-                    <span>Investment Period</span>
-                    <strong>{result.years} years</strong>
+                    <span>Investment Duration</span>
+                    <strong>{formatDuration(result.years)}</strong>
                   </div>
                 </div>
 
@@ -191,21 +220,19 @@ const LumpsumCalculatorModal = ({ onClose }) => {
                 />
 
                 <div className={styles.noteBox}>
-                  <strong>Note:</strong> Investing ₹{lumpsumAmount} as lump sum for{" "}
-                  {investmentYears} years at {expectedReturn}% can grow to{" "}
-                  {formatCurrency(result.futureValue)}.
+                  <strong>Did you know?</strong> Investing ₹{investmentAmount} for {tenureYears} years at {rateOfReturn}% can grow to {formatCurrency(result.futureValue)}.
                 </div>
-
-                {/* <button className={styles.downloadBtn}>Download Report</button> */}
               </>
             ) : (
               <div className={styles.placeholder}>
                 <img src="/growth-graph.jpg" alt="Investment Growth" />
-                <h4>See how your lump sum investment grows</h4>
-                <p>
-                  Enter amount, time period and expected returns to calculate future
-                  value.
-                </p>
+                <h4>See how your investment grows</h4>
+                <p>Fill in the details and click Calculate to visualize your returns.</p>
+                <ul>
+                  <li>Step 1: Enter investment amount</li>
+                  <li>Step 2: Set expected return rate</li>
+                  <li>Step 3: Set tenure</li>
+                </ul>
               </div>
             )}
           </section>

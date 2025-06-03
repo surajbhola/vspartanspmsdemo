@@ -3,11 +3,11 @@ import styles from "./InvestmentPlannerModal.module.css";
 import * as echarts from "echarts";
 
 const InvestmentPlannerModal = ({ onClose }) => {
-  const [monthlyIncome, setMonthlyIncome] = useState(50000);
-  const [currentAge, setCurrentAge] = useState(30);
-  const [retirementAge, setRetirementAge] = useState(60);
-  const [savingsRate, setSavingsRate] = useState(20);
-  const [expectedReturn, setExpectedReturn] = useState(10);
+  const [monthlyIncome, setMonthlyIncome] = useState();
+  const [currentAge, setCurrentAge] = useState();
+  const [retirementAge, setRetirementAge] = useState();
+  const [savingsRate, setSavingsRate] = useState();
+  const [expectedReturn, setExpectedReturn] = useState();
   const [result, setResult] = useState(null);
 
   const modalRef = useRef(null);
@@ -30,24 +30,23 @@ const InvestmentPlannerModal = ({ onClose }) => {
     };
   }, [onClose]);
 
- const calculate = () => {
-  const yearsToRetirement = retirementAge - currentAge;
-  const totalMonths = yearsToRetirement * 12;
-  const monthlySavings = (monthlyIncome * savingsRate) / 100;
-  const monthlyRate = expectedReturn / 12 / 100;
+  const calculate = () => {
+    const yearsToRetirement = retirementAge - currentAge;
+    const totalMonths = yearsToRetirement * 12;
+    const monthlySavings = (monthlyIncome * savingsRate) / 100;
+    const monthlyRate = expectedReturn / 12 / 100;
 
-  const futureValue =
-    monthlySavings *
-    ((Math.pow(1 + monthlyRate, totalMonths) - 1) / monthlyRate) *
-    (1 + monthlyRate);
+    const futureValue =
+      monthlySavings *
+      ((Math.pow(1 + monthlyRate, totalMonths) - 1) / monthlyRate) *
+      (1 + monthlyRate);
 
-  setResult({
-    monthlySavings: Math.round(monthlySavings),
-    futureValue: Math.round(futureValue),
-    yearsToRetirement,
-  });
-};
-
+    setResult({
+      monthlySavings: Math.round(monthlySavings),
+      futureValue: Math.round(futureValue),
+      yearsToRetirement,
+    });
+  };
 
   useEffect(() => {
     if (result && chartRef.current) {
@@ -92,12 +91,26 @@ const InvestmentPlannerModal = ({ onClose }) => {
     }
   }, [result]);
 
-  const formatCurrency = (val) =>
+  const formatCurrency = (amt) =>
     new Intl.NumberFormat("en-IN", {
       style: "currency",
       currency: "INR",
       maximumFractionDigits: 0,
-    }).format(val);
+    }).format(amt);
+
+  const numberToWords = (num) => {
+    const crore = Math.floor(num / 10000000);
+    num %= 10000000;
+    const lakh = Math.floor(num / 100000);
+    num %= 100000;
+    const thousand = Math.floor(num / 1000);
+
+    const parts = [];
+    if (crore) parts.push(`${crore} crore`);
+    if (lakh) parts.push(`${lakh} lakh`);
+    if (thousand) parts.push(`${thousand} thousand`);
+    return parts.join(" ");
+  };
 
   return (
     <div className={styles.overlay}>
@@ -115,6 +128,7 @@ const InvestmentPlannerModal = ({ onClose }) => {
               Monthly Income (₹)
               <input
                 type="number"
+                placeholder="e.g. 50000"
                 value={monthlyIncome}
                 onChange={(e) => setMonthlyIncome(Number(e.target.value))}
               />
@@ -124,6 +138,7 @@ const InvestmentPlannerModal = ({ onClose }) => {
               Current Age
               <input
                 type="number"
+                placeholder="e.g. 30"
                 value={currentAge}
                 onChange={(e) => setCurrentAge(Number(e.target.value))}
               />
@@ -133,6 +148,7 @@ const InvestmentPlannerModal = ({ onClose }) => {
               Retirement Age
               <input
                 type="number"
+                placeholder="e.g. 60"
                 value={retirementAge}
                 onChange={(e) => setRetirementAge(Number(e.target.value))}
               />
@@ -142,6 +158,7 @@ const InvestmentPlannerModal = ({ onClose }) => {
               Savings Rate (% of Income)
               <input
                 type="number"
+                placeholder="e.g. 20"
                 value={savingsRate}
                 onChange={(e) => setSavingsRate(Number(e.target.value))}
               />
@@ -151,6 +168,7 @@ const InvestmentPlannerModal = ({ onClose }) => {
               Expected Return (%)
               <input
                 type="number"
+                placeholder="e.g. 10"
                 value={expectedReturn}
                 onChange={(e) => setExpectedReturn(Number(e.target.value))}
               />
@@ -171,7 +189,10 @@ const InvestmentPlannerModal = ({ onClose }) => {
                   </div>
                   <div>
                     <span>Future Value</span>
-                    <strong>{formatCurrency(result.futureValue)}</strong>
+                    <strong>
+                      {formatCurrency(result.futureValue)} (
+                      {numberToWords(Math.round(result.futureValue))})
+                    </strong>
                   </div>
                   <div>
                     <span>Years to Invest</span>
@@ -198,5 +219,3 @@ const InvestmentPlannerModal = ({ onClose }) => {
 };
 
 export default InvestmentPlannerModal;
-
- 

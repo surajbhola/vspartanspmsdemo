@@ -9,15 +9,39 @@ const compoundingOptions = [
   { label: "Monthly", value: 12 },
 ];
 
+
+const numberToWords = (num) => {
+  if (num === 0) return "zero";
+
+  const crore = Math.floor(num / 10000000);
+  num %= 10000000;
+  const lakh = Math.floor(num / 100000);
+  num %= 100000;
+  const thousand = Math.floor(num / 1000);
+  num %= 1000;
+  const hundred = Math.floor(num / 100);
+  num %= 100;
+
+  const parts = [];
+  if (crore) parts.push(`${crore} crore`);
+  if (lakh) parts.push(`${lakh} lakh`);
+  if (thousand) parts.push(`${thousand} thousand`);
+  if (hundred) parts.push(`${hundred} hundred`);
+  if (num) parts.push(num);
+
+  return parts.join(" ");
+};
+
 const FixedDepositCalculatorModal = ({ onClose }) => {
-  const [compoundingFreq, setCompoundingFreq] = useState(1);
-  const [amount, setAmount] = useState(1000);
-  const [tenure, setTenure] = useState(10);
-  const [interestRate, setInterestRate] = useState(12);
+  const [compoundingFreq, setCompoundingFreq] = useState();
+  const [amount, setAmount] = useState();
+  const [tenure, setTenure] = useState();
+  const [interestRate, setInterestRate] = useState();
   const [result, setResult] = useState(null);
 
   const modalRef = useRef(null);
   const chartRef = useRef(null);
+
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -37,7 +61,7 @@ const FixedDepositCalculatorModal = ({ onClose }) => {
   }, [onClose]);
 
   const calculateFD = () => {
-    // Formula: A = P (1 + r/n)^(nt)
+ 
     const P = amount;
     const r = interestRate / 100;
     const n = compoundingFreq;
@@ -45,12 +69,14 @@ const FixedDepositCalculatorModal = ({ onClose }) => {
 
     const maturityAmount = P * Math.pow(1 + r / n, n * t);
     const totalInterest = maturityAmount - P;
+
     setResult({
       maturityAmount: Math.round(maturityAmount),
       totalInterest: Math.round(totalInterest),
       principal: P,
     });
   };
+
 
   useEffect(() => {
     if (result && chartRef.current) {
@@ -62,20 +88,26 @@ const FixedDepositCalculatorModal = ({ onClose }) => {
           data: ["Principal", "Interest Earned"],
           textStyle: { color: "#666" },
         },
-        series: [{
-          name: "FD Breakdown",
-          type: "pie",
-          radius: ["55%", "70%"],
-          label: { show: false },
-          emphasis: { label: { show: true, fontSize: 16, fontWeight: "bold" } },
-          data: [
-            { value: result.principal, name: "Principal", itemStyle: { color: "#2D69FD" } },
-            { value: result.totalInterest, name: "Interest Earned", itemStyle: { color: "#F97316" } }
-          ]
-        }]
+        series: [
+          {
+            name: "FD Breakdown",
+            type: "pie",
+            radius: ["55%", "70%"],
+            label: { show: false },
+            emphasis: { label: { show: true, fontSize: 16, fontWeight: "bold" } },
+            data: [
+              { value: result.principal, name: "Principal", itemStyle: { color: "#2D69FD" } },
+              { value: result.totalInterest, name: "Interest Earned", itemStyle: { color: "#F97316" } },
+            ],
+          },
+        ],
       });
-      window.addEventListener("resize", () => chart.resize());
-      return () => chart.dispose();
+      const resizeHandler = () => chart.resize();
+      window.addEventListener("resize", resizeHandler);
+      return () => {
+        window.removeEventListener("resize", resizeHandler);
+        chart.dispose();
+      };
     }
   }, [result]);
 
@@ -87,7 +119,9 @@ const FixedDepositCalculatorModal = ({ onClose }) => {
       <div className={styles.modal} ref={modalRef}>
         <header className={styles.modalHeader}>
           <h2>Fixed Deposit Calculator</h2>
-          <button className={styles.closeBtn} onClick={onClose}>&times;</button>
+          <button className={styles.closeBtn} onClick={onClose}>
+            &times;
+          </button>
         </header>
 
         <div className={styles.modalBody}>
@@ -96,7 +130,9 @@ const FixedDepositCalculatorModal = ({ onClose }) => {
               Compounding Frequency *
               <select value={compoundingFreq} onChange={(e) => setCompoundingFreq(+e.target.value)}>
                 {compoundingOptions.map((opt) => (
-                  <option key={opt.value} value={opt.value}>{opt.label}</option>
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
                 ))}
               </select>
             </label>
@@ -108,6 +144,7 @@ const FixedDepositCalculatorModal = ({ onClose }) => {
                 min={100}
                 value={amount}
                 onChange={(e) => setAmount(+e.target.value)}
+                placeholder="Enter amount"
               />
             </label>
 
@@ -119,6 +156,7 @@ const FixedDepositCalculatorModal = ({ onClose }) => {
                 max={50}
                 value={tenure}
                 onChange={(e) => setTenure(+e.target.value)}
+                placeholder="Enter tenure"
               />
             </label>
 
@@ -130,6 +168,7 @@ const FixedDepositCalculatorModal = ({ onClose }) => {
                 step={0.01}
                 value={interestRate}
                 onChange={(e) => setInterestRate(+e.target.value)}
+                placeholder="Enter interest rate"
               />
             </label>
 
@@ -145,19 +184,24 @@ const FixedDepositCalculatorModal = ({ onClose }) => {
                   <div>
                     <span>Principal</span>
                     <strong>{formatCurrency(result.principal)}</strong>
+                    <small>({numberToWords(result.principal)})</small>
                   </div>
                   <div>
                     <span>Interest Earned</span>
                     <strong>{formatCurrency(result.totalInterest)}</strong>
+                    <small>({numberToWords(result.totalInterest)})</small>
                   </div>
                   <div>
                     <span>Maturity Amount</span>
                     <strong>{formatCurrency(result.maturityAmount)}</strong>
+                    <small>({numberToWords(result.maturityAmount)})</small>
                   </div>
                 </div>
                 <div ref={chartRef} className={styles.chartContainer} />
                 <p className={styles.note}>
-                  Your FD will mature to {formatCurrency(result.maturityAmount)} in {tenure} years at {interestRate}% interest compounded {compoundingOptions.find(c => c.value === compoundingFreq)?.label.toLowerCase()}.
+                  Your FD will mature to <strong>{formatCurrency(result.maturityAmount)}</strong> ({numberToWords(result.maturityAmount)}) in{" "}
+                  <strong>{tenure}</strong> years at <strong>{interestRate}%</strong> interest compounded{" "}
+                  <strong>{compoundingOptions.find((c) => c.value === compoundingFreq)?.label.toLowerCase()}</strong>.
                 </p>
               </>
             ) : (

@@ -2,10 +2,10 @@ import React, { useState, useEffect, useRef } from "react";
 import styles from "./GoalPlanningLumpsumModal.module.css";
 import * as echarts from "echarts";
 
-const GoalPlanningLumpSumModal = ({ onClose }) => {
-  const [goalAmount, setGoalAmount] = useState(1000000);
-  const [years, setYears] = useState(10);
-  const [rate, setRate] = useState(12);
+const GoalPlanningLumpsumModal = ({ onClose }) => {
+  const [targetWealth, setTargetWealth] = useState("");
+  const [rateOfReturn, setRateOfReturn] = useState("");
+  const [tenureYears, setTenureYears] = useState("");
   const [result, setResult] = useState(null);
 
   const modalRef = useRef(null);
@@ -13,14 +13,19 @@ const GoalPlanningLumpSumModal = ({ onClose }) => {
 
   useEffect(() => {
     const handleClickOutside = (e) => {
-      if (modalRef.current && !modalRef.current.contains(e.target)) onClose();
+      if (modalRef.current && !modalRef.current.contains(e.target)) {
+        onClose();
+      }
     };
     const handleEscape = (e) => {
-      if (e.key === "Escape") onClose();
+      if (e.key === "Escape") {
+        onClose();
+      }
     };
     document.addEventListener("mousedown", handleClickOutside);
     document.addEventListener("keydown", handleEscape);
     document.body.style.overflow = "hidden";
+
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
       document.removeEventListener("keydown", handleEscape);
@@ -29,152 +34,212 @@ const GoalPlanningLumpSumModal = ({ onClose }) => {
   }, [onClose]);
 
   const calculate = () => {
-    const pv = goalAmount / Math.pow(1 + rate / 100, years);
-    const gains = goalAmount - pv;
+    const FV = Number(targetWealth);
+    const r = Number(rateOfReturn) / 100;
+    const t = Number(tenureYears);
+
+    if (!FV || !r || !t || t > 50) {
+      alert("Please enter valid values for all fields (Tenure up to 50 years).");
+      return;
+    }
+
+    const P = FV / Math.pow(1 + r, t);
+    const gains = FV - P;
 
     setResult({
-      goalAmount,
-      lumpSum: Math.round(pv),
-      gains: Math.round(gains),
-      years,
+      requiredInvestment: P,
+      targetedWealth: FV,
+      gains,
+      years: t,
     });
   };
 
   useEffect(() => {
     if (result && chartRef.current) {
       const chart = echarts.init(chartRef.current);
-      const option = {
-        tooltip: { trigger: "item", formatter: "{b}: ₹{c} ({d}%)" },
+      chart.setOption({
+        animation: true,
+        tooltip: { trigger: "item", formatter: "{b}: {c} ({d}%)" },
         legend: {
           bottom: 0,
-          data: ["Lump Sum to Invest Today", "Estimated Returns"],
-          textStyle: { color: "#666" },
+          data: ["Required Investment", "Estimated Returns"],
+          textStyle: { color: "#555" },
         },
         series: [
           {
-            name: "Investment",
+            name: "Investment Breakdown",
             type: "pie",
-            radius: ["55%", "70%"],
-            avoidLabelOverlap: false,
+            radius: ["50%", "70%"],
             label: { show: false },
-            emphasis: { label: { show: true, fontSize: 18, fontWeight: "bold" } },
+            emphasis: {
+              label: { show: true, fontSize: 16, fontWeight: "bold" },
+            },
             data: [
-              { value: result.lumpSum, name: "Lump Sum to Invest Today", itemStyle: { color: "#2D69FD" } },
-              { value: result.gains, name: "Estimated Returns", itemStyle: { color: "#00C48C" } },
+              {
+                value: result.requiredInvestment,
+                name: "Required Investment",
+                itemStyle: { color: "#0B3D91" },
+              },
+              {
+                value: result.gains,
+                name: "Estimated Returns",
+                itemStyle: { color: "#27AE60" },
+              },
             ],
           },
         ],
-      };
-      chart.setOption(option);
-      const resizeHandler = () => chart.resize();
-      window.addEventListener("resize", resizeHandler);
+      });
+
+      const resize = () => chart.resize();
+      window.addEventListener("resize", resize);
       return () => {
+        window.removeEventListener("resize", resize);
         chart.dispose();
-        window.removeEventListener("resize", resizeHandler);
       };
     }
   }, [result]);
 
-  const formatCurrency = (val) =>
+  const formatCurrency = (amt) =>
     new Intl.NumberFormat("en-IN", {
       style: "currency",
       currency: "INR",
       maximumFractionDigits: 0,
-    }).format(val);
+    }).format(amt);
+
+  const numberToWords = (num) => {
+    const crore = Math.floor(num / 10000000);
+    num %= 10000000;
+    const lakh = Math.floor(num / 100000);
+    num %= 100000;
+    const thousand = Math.floor(num / 1000);
+
+    const parts = [];
+    if (crore) parts.push(`${crore} crore`);
+    if (lakh) parts.push(`${lakh} lakh`);
+    if (thousand) parts.push(`${thousand} thousand`);
+    return parts.join(" ");
+  };
+
+  const formatDuration = (years) => {
+    return years ? `${years} year${years > 1 ? "s" : ""}` : "0 years";
+  };
 
   return (
-    <div className={styles.overlay}>
-      <div className={styles.modal} ref={modalRef}>
-        <header className={styles.modalHeader}>
-          <h2>Goal Planning - Lump Sum</h2>
-          <button onClick={onClose} className={styles.closeBtn}>&times;</button>
+    <div className={styles.overlay} role="dialog" aria-modal="true" aria-labelledby="modal-title">
+      <div className={styles.modal} ref={modalRef} tabIndex={-1}>
+        <header className={styles.header}>
+          <h2 id="modal-title">Goal Planning - Lumpsum</h2>
+          <button onClick={onClose} className={styles.closeButton} aria-label="Close modal">
+            &times;
+          </button>
         </header>
 
-        <div className={styles.modalBody}>
-          <div className={styles.inputSection}>
+        <div className={styles.container}>
+          <section className={styles.inputSection}>
             <label>
-              Goal Amount (₹)
+              Targeted Wealth*
               <input
                 type="number"
-                min={10000}
-                value={goalAmount}
-                onChange={(e) => setGoalAmount(Number(e.target.value))}
+                value={targetWealth}
+                onChange={(e) => setTargetWealth(e.target.value)}
+                placeholder="e.g., 1000000"
               />
             </label>
 
             <label>
-              Time to Goal (Years)
+              Expected Rate of Return (P.A)*
               <input
                 type="number"
-                min={1}
-                value={years}
-                onChange={(e) => setYears(Number(e.target.value))}
+                value={rateOfReturn}
+                onChange={(e) => setRateOfReturn(e.target.value)}
+                placeholder="e.g., 12"
               />
             </label>
 
             <label>
-              Expected Annual Return (%)
+              Tenure (in years)* (Up to 50 years)
               <input
                 type="number"
-                min={1}
-                max={30}
-                value={rate}
-                onChange={(e) => setRate(Number(e.target.value))}
+                value={tenureYears}
+                onChange={(e) => setTenureYears(e.target.value)}
+                placeholder="e.g., 10"
+                max={50}
               />
             </label>
 
-            <button className={styles.calculateBtn} onClick={calculate}>
+            <button onClick={calculate} className={styles.calculateBtn}>
               Calculate
             </button>
 
-            <p className={styles.tip}>
-              Enter your financial goal and expected return to estimate how much you need to invest today.
-            </p>
-          </div>
+            <div className={styles.tipBox}>
+              <strong>Quick Tip:</strong> Define your goal and see how much lump sum you need to invest to reach it.
+            </div>
+          </section>
 
-          <div className={styles.resultSection}>
+          <section className={styles.outputSection}>
             {result ? (
               <>
-
-              
-                <div className={styles.resultStats}>
+                <div className={styles.statsBox}>
                   <div>
-                    <span>Goal Amount</span>
-                    <strong>{formatCurrency(result.goalAmount)}</strong>
-                  </div>
-                  <div>
-                    <span>Lump Sum to Invest Today</span>
-                    <strong>{formatCurrency(result.lumpSum)}</strong>
+                    <span>Required Investment</span>
+                    <strong>
+                      {formatCurrency(result.requiredInvestment)}{" "}
+                      <span className={styles.amountWords}>
+                        ({numberToWords(result.requiredInvestment)})
+                      </span>
+                    </strong>
                   </div>
                   <div>
                     <span>Estimated Returns</span>
-                    <strong>{formatCurrency(result.gains)}</strong>
+                    <strong>
+                      {formatCurrency(result.gains)}{" "}
+                      <span className={styles.amountWords}>
+                        ({numberToWords(result.gains)})
+                      </span>
+                    </strong>
                   </div>
                   <div>
-                    <span>Time to Goal</span>
-                    <strong>{result.years} years</strong>
+                    <span>Targeted Wealth</span>
+                    <strong>
+                      {formatCurrency(result.targetedWealth)}{" "}
+                      <span className={styles.amountWords}>
+                        ({numberToWords(result.targetedWealth)})
+                      </span>
+                    </strong>
+                  </div>
+                  <div>
+                    <span>Investment Duration</span>
+                    <strong>{formatDuration(result.years)}</strong>
                   </div>
                 </div>
 
-                <div className={styles.chartContainer} ref={chartRef}></div>
+                <div
+                  ref={chartRef}
+                  className={styles.chart}
+                  style={{ height: 200, marginTop: 20 }}
+                />
 
-                <p className={styles.note}>
-                  Investing {formatCurrency(result.lumpSum)} today at an expected return of {rate}% p.a. can help you
-                  achieve your goal of {formatCurrency(result.goalAmount)} in {years} years.
-                </p>
+                <div className={styles.noteBox}>
+                  <strong>Did you know?</strong> To achieve ₹{formatCurrency(result.targetedWealth)} in {tenureYears} years at {rateOfReturn}% p.a., you need to invest ₹{formatCurrency(result.requiredInvestment)} now.
+                </div>
               </>
             ) : (
               <div className={styles.placeholder}>
-                <img src="/growth-graph.jpg" alt="Goal Planning Lump Sum" />
-                <h4>Plan your goal with lump sum investment</h4>
-                <p>Enter your target amount, time horizon and expected returns.</p>
+                <img src="/growth-graph.jpg" alt="Goal Planning Growth" />
+                <h4>Plan your goal investment</h4>
+                <p>Fill in the target, return rate, and tenure to find your required lump sum investment.</p>
+                <ul>
+                  <li>Step 1: Enter targeted wealth</li>
+                  <li>Step 2: Set expected return rate</li>
+                  <li>Step 3: Set tenure</li>
+                </ul>
               </div>
             )}
-          </div>
+          </section>
         </div>
       </div>
     </div>
   );
 };
 
-export default GoalPlanningLumpSumModal;
+export default GoalPlanningLumpsumModal;
