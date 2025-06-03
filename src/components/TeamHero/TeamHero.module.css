@@ -1,0 +1,79 @@
+:root {
+  --primary: #1a2b4e;
+  --secondary: #c4a962;
+}
+
+.heroSection {
+  background-image: url("https://readdy.ai/api/search-image?query=A%2520professional%2520and%2520sophisticated%2520team%2520of%2520diverse%2520financial%2520consultants%2520in%2520a%2520modern%2520office%2520environment.%2520The%2520image%2520shows%2520a%2520group%2520of%2520well-dressed%2520Indian%2520professionals%2520of%2520various%2520ages%2520in%2520formal%2520business%2520attire%2520with%2520navy%2520blue%2520and%2520gold%2520accents.%2520They%2520are%2520positioned%2520in%2520a%2520contemporary%2520office%2520with%2520glass%2520partitions%2520and%2520city%2520views.%2520The%2520lighting%2520is%2520professional%2520with%2520a%2520dark%2520blue%2520gradient%2520overlay%2520that%2520allows%2520white%2520text%2520to%2520be%2520clearly%2520visible.%2520The%2520scene%2520conveys%2520expertise%252C%2520professionalism%252C%2520and%2520teamwork.&width=1920&height=600&seq=10&orientation=landscape");
+  background-size: cover;
+  background-position: center;
+}
+
+.overlay {
+  background-color: rgba(26, 43, 78, 0.7);
+  padding: 5rem 0;
+}
+
+.container {
+  max-width: 1024px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+.content {
+  max-width: 768px;
+  color: white;
+}
+
+.badge {
+  display: inline-block;
+  padding: 0.25rem 1rem;
+  background-color: rgba(196, 169, 98, 0.2);
+  color: white;
+  border-radius: 9999px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  margin-bottom: 1.5rem;
+}
+
+.title {
+  font-size: 2.5rem;
+  line-height: 1.3;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+}
+
+@media (min-width: 1024px) {
+  .title {
+    font-size: 3rem;
+  }
+}
+
+.description {
+  font-size: 1.125rem;
+  color: #f3f4f6;
+  margin-bottom: 2rem;
+}
+
+.stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2rem;
+  margin-top: 2rem;
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+}
+
+.statValue {
+  font-size: 2rem;
+  font-weight: 700;
+  color: white;
+}
+
+.statLabel {
+  font-size: 0.875rem;
+  color: #e5e7eb;
+}

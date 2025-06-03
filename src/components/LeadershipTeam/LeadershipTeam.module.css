@@ -1,0 +1,133 @@
+.leadershipSection {
+  padding: 4rem 0;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+.sectionHeader {
+  text-align: center;
+  max-width: 768px;
+  margin: 0 auto 4rem;
+}
+
+.subtitle {
+  color: #6b46c1;
+  font-weight: 500;
+}
+
+.title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #2c3e50;
+  margin: 0.5rem 0 1rem;
+}
+
+.description {
+  color: #718096;
+}
+
+.grid {
+  display: grid;
+  gap: 2rem;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+}
+
+.card {
+  background-color: white;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  cursor: pointer;
+}
+
+.card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 12px 20px rgba(0, 0, 0, 0.12);
+}
+
+.imageContainer {
+  height: 20rem;
+  overflow: hidden;
+}
+
+.image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top;
+  transition: transform 0.4s ease;
+}
+
+.card:hover .image {
+  transform: scale(1.05);
+}
+
+.cardContent {
+  padding: 1.5rem;
+}
+
+.name {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #2c3e50;
+  transition: color 0.3s ease;
+}
+
+.card:hover .name {
+  color: #6b46c1;
+}
+
+.role {
+  color: #6b46c1;
+  font-weight: 500;
+  margin-bottom: 0.75rem;
+}
+
+.info {
+  margin-bottom: 1rem;
+  color: #4a5568;
+}
+
+.info div {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.info i {
+  margin-right: 0.5rem;
+  color: #a0aec0;
+}
+
+.bio {
+  color: #718096;
+  margin-bottom: 1rem;
+}
+
+.socials {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.socials a {
+  width: 2.5rem;
+  height: 2.5rem;
+  background-color: #edf2f7;
+  border-radius: 9999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #4a5568;
+  transition: background-color 0.3s ease, color 0.3s ease, transform 0.3s ease;
+}
+
+.socials a:hover {
+  background-color: #6b46c1;
+  color: #fff;
+  transform: scale(1.1);
+}

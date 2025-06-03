@@ -1,0 +1,169 @@
+:root {
+  --primary: #1A2B4E; 
+  --secondary: #C4A962; 
+}
+
+.section {
+  padding-top: 5rem; 
+  padding-bottom: 5rem;
+  background-color: #f9fafb; 
+}
+
+.container {
+  max-width: 1200px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1.5rem; 
+  padding-right: 1.5rem; 
+}
+
+.header {
+  text-align: center;
+  max-width: 48rem; 
+  margin-left: auto;
+  margin-right: auto;
+  margin-bottom: 4rem; 
+}
+
+.subtitle {
+  color: var(--secondary);
+  font-weight: 500;
+}
+
+.title {
+  font-size: 1.875rem; 
+  line-height: 2.25rem; 
+  font-weight: 700;
+  color: var(--primary);
+  margin-top: 0.5rem; 
+  margin-bottom: 1rem; 
+}
+
+@media (min-width: 1024px) {
+  .title {
+    font-size: 2.25rem; 
+    line-height: 2.5rem;
+  }
+}
+
+.description {
+  color: #4b5563; 
+}
+
+.timelineWrapper {
+  max-width: 64rem; 
+  margin-left: auto;
+  margin-right: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem; 
+  position: relative;
+}
+
+.timelineItem {
+  position: relative;
+  padding-left: 3rem; 
+  padding-bottom: 2rem; 
+}
+
+.timelineDot {
+  width: 2rem; 
+  height: 2rem; 
+  border-radius: 9999px;
+  position: absolute;
+  left: 0;
+  top: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.primaryDot {
+  background-color: var(--primary);
+}
+
+.secondaryDot {
+  background-color: var(--secondary);
+}
+
+.iconWhite {
+  color: white;
+  font-size: 1.25rem; 
+}
+
+.timelineContent {
+  background-color: white;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.05); 
+  padding: 1.5rem; 
+  border: 1px solid #f3f4f6; 
+}
+
+.yearBadge {
+  display: inline-block;
+  padding-left: 0.75rem; 
+  padding-right: 0.75rem;
+  padding-top: 0.25rem; 
+  padding-bottom: 0.25rem;
+  border-radius: 9999px;
+  font-size: 0.875rem; 
+  font-weight: 500;
+  margin-bottom: 0.75rem;
+}
+
+.primaryBadge {
+  background-color: var(--primary);
+  background-color: var(--primary);
+  background-color: rgba(26, 43, 78, 0.2); 
+  color: var(--primary);
+}
+
+.secondaryBadge {
+  background-color: rgba(196, 169, 98, 0.2); 
+  color: var(--secondary);
+}
+
+.timelineTitle {
+  font-size: 1.25rem; 
+  font-weight: 600;
+  color: var(--primary);
+  margin-bottom: 0.5rem; 
+}
+
+.timelineDescription {
+  color: #4b5563; 
+}
+
+
+
+
+.timelineWrapper {
+  position: relative;
+  max-width: 64rem; 
+  margin-left: auto;
+  margin-right: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.timelineWrapper::before {
+  content: "";
+  position: absolute;
+  left: 1.5rem; 
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background-color: var(--secondary);
+  opacity: 0.2;
+  border-radius: 2px;
+  z-index: 0;
+}
+
+
+.timelineDot {
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 1; 
+}

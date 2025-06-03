@@ -1,0 +1,158 @@
+.footer {
+  background-color: #1a1a2e;
+  color: #ffffff;
+  padding-top: 4rem;
+  padding-bottom: 2rem;
+}
+
+.container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
+  margin-bottom: 3rem;
+}
+
+@media (min-width: 768px) {
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.logo {
+  font-family: 'Pacifico', cursive;
+  font-size: 1.875rem;
+  display: block;
+  margin-bottom: 1.5rem;
+  color: white;
+}
+
+.description {
+  color: #9ca3af;
+  margin-bottom: 1.5rem;
+}
+
+.socialIcons a {
+  display: inline-flex;
+  width: 2.5rem;
+  height: 2.5rem;
+  background-color: #2d2d44;
+  border-radius: 50%;
+  align-items: center;
+  justify-content: center;
+  margin-right: 0.5rem;
+  transition: background-color 0.3s;
+  color: white;
+
+}
+
+.socialIcons a:hover {
+  background-color: #3f3f5e;
+}
+
+ul {
+    
+  list-style: none;
+  padding: 0;
+  color: #9ca3af;
+}
+
+ul li a {
+  color: #9ca3af;
+  text-decoration: none;
+}
+
+ul li a:hover {
+  color: #ffffff;
+}
+
+.contactList li {
+  display: flex;
+  align-items: start;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.newsletterHeading {
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+}
+
+.form {
+  display: flex;
+}
+
+.form input {
+  background-color: #2d2d44;
+  border: none;
+  padding: 0.5rem 1rem;
+  color: #ffffff;
+  flex-grow: 1;
+  border-radius: 0.5rem 0 0 0.5rem;
+}
+
+.form button {
+  background-color: #C4A962;
+  color: #ffffff;
+  padding: 0.5rem 1rem;
+  border-radius: 0 0.5rem 0.5rem 0;
+  border: none;
+  cursor: pointer;
+}
+
+.form button:hover {
+  opacity: 0.9;
+}
+
+.bottomBar {
+  border-top: 1px solid #2d2d44;
+  padding-top: 2rem;
+  margin-top: 2rem;
+  text-align: center;
+}
+
+.links {
+  margin-top: 1rem;
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem;
+}
+
+.links a {
+  color: #9ca3af;
+  text-decoration: none;
+  font-size: 0.875rem;
+}
+
+.links a:hover {
+  color: #ffffff;
+}
+
+.payments {
+  margin-top: 1rem;
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.payments i {
+  font-size: 1.5rem;
+  color: #9ca3af;
+}
+
+
+
+.linkItem{
+    margin-bottom: 1rem !important;
+}

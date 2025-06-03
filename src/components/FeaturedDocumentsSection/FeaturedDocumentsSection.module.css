@@ -1,0 +1,352 @@
+.section {
+  padding: 3rem 0;
+  background-color: #f9fafb;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+.heading {
+  font-size: 1.875rem;
+  font-weight: 700;
+  color: #1a2b4d;
+  margin-bottom: 2rem;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
+}
+
+@media (min-width: 768px) {
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.card {
+  background-color: white;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  transition: box-shadow 0.3s ease;
+  cursor: pointer;
+}
+
+.card:hover {
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.imageWrapper {
+  height: 12rem;
+  overflow: hidden;
+}
+
+.image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top;
+  transition: transform 0.3s ease;
+}
+
+.card:hover .image {
+  transform: scale(1.05);
+}
+
+.cardContent {
+  padding: 1.5rem;
+}
+
+.meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.category {
+  background-color: rgba(26, 43, 77, 0.1);
+  color: #1a2b4d;
+  font-size: 0.75rem;
+  font-weight: 500;
+  padding: 0.25rem 0.625rem;
+  border-radius: 9999px;
+}
+
+.date {
+  font-size: 0.75rem;
+  color: #6b7280;
+}
+
+.title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #1a2b4d;
+  margin-bottom: 0.5rem;
+}
+
+.description {
+  color: #4b5563;
+  font-size: 0.875rem;
+  margin-bottom: 1rem;
+}
+
+.footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.metaDetail {
+  display: flex;
+  align-items: center;
+  font-size: 0.75rem;
+  color: #6b7280;
+}
+
+.pdfIcon {
+  color: #c4a962;
+  margin-right: 0.25rem;
+}
+
+.viewButton {
+  background: none;
+  border: none;
+  font-size: 0.875rem;
+  color: #c4a962;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  transition: color 0.2s ease;
+}
+
+.viewButton:hover {
+  color: #1a2b4d;
+}
+
+.arrowIcon {
+  margin-left: 0.25rem;
+}
+
+
+
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgb(0 0 0 / 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  padding: 1rem;
+  overflow-y: auto;
+}
+
+.modalContent {
+  background: white;
+  border-radius: 12px;
+  max-width: 900px;
+  width: 100%;
+  box-shadow: 0 4px 24px rgb(0 0 0 / 0.3);
+  display: flex;
+  flex-direction: column;
+  max-height: 90vh;
+  overflow: hidden;
+}
+
+.modalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid #eee;
+}
+
+.modalHeader h3 {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #222;
+}
+
+.modalHeader button {
+  background: transparent;
+  border: none;
+  font-size: 1.25rem;
+  cursor: pointer;
+  color: #666;
+}
+
+.modalBody {
+  display: flex;
+  gap: 1.5rem;
+  padding: 1rem 1.5rem;
+  overflow-y: auto;
+  flex-grow: 1;
+}
+
+.modalLeft {
+  flex: 1 1 40%;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.modalLeft img {
+  width: 100%;
+  border-radius: 8px;
+  object-fit: contain;
+  background: #eee;
+  max-height: 300px;
+}
+
+.docDetails {
+  background: #f7f7f7;
+  padding: 1rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  color: #444;
+}
+
+.docDetails h4 {
+  margin-bottom: 0.5rem;
+  font-weight: 700;
+}
+
+.docDetails ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.docDetails li {
+  margin-bottom: 0.4rem;
+}
+
+.modalRight {
+  flex: 1 1 60%;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  font-size: 0.95rem;
+  color: #333;
+}
+
+.modalRight h4 {
+  font-weight: 700;
+  margin-bottom: 0.3rem;
+}
+
+.previewBox {
+  background: #e2e2e2;
+  border-radius: 8px;
+  padding: 3rem 1rem;
+  text-align: center;
+  color: #777;
+  border: 2px dashed #ccc;
+}
+
+.previewBox i {
+  font-size: 3rem;
+  margin-bottom: 0.5rem;
+}
+
+.actionButtons {
+  display: flex;
+  gap: 1rem;
+  margin-top: auto;
+}
+
+.actionButtons button {
+  flex: 1 1 auto;
+  background: #c4a962;
+  border: none;
+  color: white;
+  font-weight: 600;
+  border-radius: 6px;
+  padding: 0.7rem 1rem;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+  transition: background-color 0.2s ease-in-out;
+  font-size: 1rem;
+}
+
+.actionButtons button:hover {
+  background-color: #635329;
+}
+
+.downloadBtn {
+  background-color: #d9534f;
+}
+
+.downloadBtn:hover {
+  background-color: #c9302c;
+}
+
+
+
+.modalFooter {
+  border-top: 1px solid #eee;
+  padding: 1rem 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.modalFooter button {
+  background: #c4a962;
+  border: none;
+  padding: 0.5rem 1.25rem;
+  color: white;
+  font-weight: 600;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  transition: background-color 0.2s ease-in-out;
+}
+
+.modalFooter button:hover {
+  background-color: #c4a962;
+}
+
+
+@media (max-width: 900px) {
+  .gridWrapper {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    position: relative;
+    top: 0;
+    width: 100%;
+    margin-bottom: 1.5rem;
+  }
+
+  .modalBody {
+    flex-direction: column;
+  }
+
+  .modalLeft,
+  .modalRight {
+    flex: 1 1 100%;
+  }
+}

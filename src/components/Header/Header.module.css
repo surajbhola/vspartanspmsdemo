@@ -1,0 +1,147 @@
+.header {
+  position: fixed;
+  width: 100%;
+  background-color: white;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  z-index: 50;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1rem 1.5rem;
+}
+
+.flexBetween {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.flexGroup {
+  display: flex;
+  align-items: center;
+}
+
+.logo {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #1A2B4E;
+  margin-right: 2.5rem;
+  color: white !important;
+}
+
+.gold {
+  color: #C4A962;
+}
+
+.desktopNav {
+  display: none;
+}
+
+.navLink {
+  color: #1A2B4E;
+  margin-right: 2rem;
+  transition: color 0.3s ease;
+  cursor: pointer;
+  white-space: nowrap;
+  text-decoration: none;
+}
+
+.navLink:hover {
+  color: #C4A962;
+}
+
+.contactButton {
+  display: none;
+  background-color: #1A2B4E;
+  color: white;
+  padding: 0.5rem 1.5rem;
+  border-radius: 0.375rem;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+  text-decoration: none;
+}
+
+.contactButton:hover {
+  background-color: rgba(26, 43, 78, 0.9);
+}
+
+.menuButton {
+  background: none;
+  border: none;
+  color: #1A2B4E;
+  font-size: 1.5rem;
+  cursor: pointer;
+  display: block;
+}
+
+
+.mobileMenu {
+  background-color: white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.mobileNav {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1.5rem;
+}
+
+.mobileLink {
+  color: #1A2B4E;
+  transition: color 0.3s ease;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.mobileLink:hover {
+  color: #C4A962;
+}
+
+.icon {
+  font-size: 1.5rem;
+}
+
+
+@media (min-width: 768px) {
+  .desktopNav {
+    display: flex;
+  }
+
+  .contactButton {
+    display: block;
+  }
+
+  .menuButton {
+    display: none;
+  }
+
+  .mobileMenu {
+    display: none;
+  }
+}
+
+
+.logoContainer {
+  display: flex;
+  align-items: center;
+  margin-right: 2rem;
+}
+
+.logoText {
+  font-size: 1.875rem; 
+  font-family: 'Pacifico', cursive;
+  color: #1A2B4E; 
+  text-decoration: none;
+}
+
+.badge {
+  margin-left: 0.5rem; 
+  font-size: 0.75rem; 
+  background-color: #C4A962; 
+  color: white;
+  padding: 0.25rem 0.5rem; 
+  border-radius: 9999px;
+}

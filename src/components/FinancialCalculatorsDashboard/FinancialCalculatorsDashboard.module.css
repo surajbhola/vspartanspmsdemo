@@ -1,0 +1,235 @@
+.dashboard {
+  padding: 2rem 1rem 3rem;
+  max-width: 1200px;
+  margin: auto;
+}
+
+.hero {
+  display: flex;
+  background: linear-gradient(90deg, #1a2b4d, #2a3b5d, #34785b);
+  border-radius: 1.5rem;
+  color: white;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  margin-bottom: 3rem;
+}
+
+.heroContent {
+  flex: 1;
+  padding: 3rem;
+  position: relative;
+  z-index: 2;
+}
+
+.heroContent h1 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+}
+
+.heroContent p {
+  font-size: 1.125rem;
+  opacity: 0.9;
+  margin-bottom: 2rem;
+}
+
+.heroActions {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.primaryBtn,
+.secondaryBtn {
+  padding: 0.75rem 1.5rem;
+  font-weight: 600;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.3s ease;
+}
+
+.primaryBtn {
+  background-color: #ffb946;
+  color: #1a2b4d;
+}
+
+.secondaryBtn {
+  border: 2px solid white;
+  background: transparent;
+  color: white;
+}
+
+.primaryBtn:hover {
+  background-color: #e6a935;
+}
+
+.secondaryBtn:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.heroImage {
+  flex: 1;
+  background: url("https://readdy.ai/api/search-image?query=Modern%20financial%20planning%20concept&width=700&height=400")
+    no-repeat center/cover;
+}
+
+.searchFilter {
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.searchBar {
+  position: relative;
+  max-width: 500px;
+  margin: auto;
+}
+
+.searchBar input {
+  width: 100%;
+  padding: 0.75rem 1rem 0.75rem 2.5rem;
+  border-radius: 0.5rem;
+  border: 1px solid #ccc;
+  font-size: 0.875rem;
+}
+
+.searchBar i {
+  position: absolute;
+  top: 50%;
+  left: 1rem;
+  transform: translateY(-50%);
+  color: #888;
+}
+
+.searchBar button {
+  position: absolute;
+  top: 50%;
+  right: 1rem;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: #888;
+  cursor: pointer;
+}
+
+.filters {
+  margin-top: 1rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: center;
+}
+
+.filterBtn {
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.filterBtn:hover {
+  background: #f9f9f9;
+  color: #1a2b4d;
+}
+
+.active {
+  background: #1a2b4d;
+  color: white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.grid {
+  display: grid;
+  gap: 1.5rem;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+}
+
+.card {
+  background: #fff;
+  padding: 1.5rem;
+  border-radius: 1rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  border: 1px solid #eee;
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  cursor: pointer;
+}
+
+.card:hover {
+  transform: translateY(-5px) rotate(0.5deg);
+  border-color: #ddd;
+}
+
+.cardIcon {
+  width: 3rem;
+  height: 3rem;
+  background: #f8f9fa;
+  color: #1a2b4d;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  margin-bottom: 1rem;
+}
+
+.card h3 {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #1a2b4d;
+  margin-bottom: 0.5rem;
+}
+
+.card p {
+  font-size: 0.875rem;
+  color: #555;
+  flex-grow: 1;
+}
+
+.cardBtn {
+  margin-top: 1rem;
+  background: #f8f9fa;
+  color: #1a2b4d;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  font-size: 0.875rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.cardBtn:hover {
+  background: #1a2b4d;
+  color: white;
+}
+
+.emptyState {
+  grid-column: 1/-1;
+  text-align: center;
+  color: #999;
+}
+
+.emptyState i {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+}
+
+.emptyState button {
+  margin-top: 1rem;
+  background: #1a2b4d;
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  border: none;
+  cursor: pointer;
+}
