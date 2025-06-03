@@ -21,7 +21,7 @@ export default function Footer() {
           <div>
             <h3 style={{marginBottom: "1rem"}}>Quick Links</h3>
             <ul>
-              {['Home','About Us','Our Team','Our Offerings','Resources','FAQs','Career','Contact Us'].map(item => (
+              {['Home','About','Team','Offerings','Resources','FAQs','Career','Contact Us'].map(item => (
                 <li key={item} className={styles.linkItem}><a href="#">{item}</a></li>
               ))}
             </ul>
