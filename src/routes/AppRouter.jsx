@@ -8,11 +8,13 @@ import Offerings from "../pages/Offerings/Offerings";
 import Resources from "../pages/Resources/Resources";
 import Calculators from "../pages/Calculators/Calculators";
 import ContactUs from "../pages/ContactUs/ContactUs";
+import ScrollToTop from "../components/ScrollToTop/ScrollToTop";
 
 
 const AppRouter = () => {
   return (
     <Router>
+      <ScrollToTop></ScrollToTop>
       <Header />
 
       <main style={{ paddingTop: "80px" }}>
