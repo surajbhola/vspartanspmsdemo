@@ -140,5 +140,5 @@
 }
 
 .button:hover {
-  background-color: #1e40af;
+  background-color: var(--primary);
 }
