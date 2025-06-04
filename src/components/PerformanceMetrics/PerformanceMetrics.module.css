@@ -289,3 +289,67 @@
 .button:hover {
   background-color: #2563eb;
 }
+
+
+
+
+@media (max-width: 500px) {
+  .chart {
+   display: none;
+  }
+
+  .title {
+    font-size: 1.25rem;
+  }
+
+  .trackRecord {
+    font-size: 1.5rem;
+  }
+
+  .button {
+    font-size: 0.875rem;
+    padding: 0.5rem 1rem;
+  }
+  .wrapperMain{
+    padding: 0rem;
+  }
+  .container {
+    display: flex;
+    flex-direction: column;
+}
+}
+
+@media (min-width: 501px) and (max-width: 768px) {
+
+  .wrapperMain{
+    padding: 0rem;
+  }
+  .trackRecord {
+    font-size: 1.75rem;
+  }
+
+  .title {
+    font-size: 1.5rem;
+  }
+
+}
+
+@media (min-width: 769px) and (max-width: 1023px) {
+  .wrapperMain {
+    padding: 3rem;
+  }
+
+  .title {
+    font-size: 1.75rem;
+  }
+}
+
+@media (min-width: 1024px) and (max-width: 1439px) {
+  .wrapperMain {
+    padding: 5rem;
+  }
+
+  .title {
+    font-size: 2rem;
+  }
+}
